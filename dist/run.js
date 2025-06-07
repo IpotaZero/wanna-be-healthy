@@ -37,7 +37,7 @@ const state = {
     dark: [],
     usedSleepingMedicine: true,
     OD: false,
-    day: 1,
+    day: 3,
     wannaMedicine: 0,
 };
 let lastUpdateTime = performance.now();

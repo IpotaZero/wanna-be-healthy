@@ -9,7 +9,7 @@ class BGM {
     /**
      * BGM自体のボリューム
      */
-    static volume = 0.8;
+    static volume = 0.5;
     /**
      * 音声ファイルそれぞれのボリューム
      */

@@ -41,7 +41,7 @@ const state = {
     dark: [] as number[],
     usedSleepingMedicine: true,
     OD: false,
-    day: 1,
+    day: 3,
     wannaMedicine: 0,
 }
 

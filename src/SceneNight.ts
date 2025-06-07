@@ -1,26 +1,25 @@
 class SceneNight extends Scene {
     #mode: "pause" | "stg" = "pause"
 
-    #ctx!: CanvasRenderingContext2D
+    ctx!: CanvasRenderingContext2D
 
     #awakeness = 100
     #time = 150
     #timeElement!: HTMLElement
 
-    #stage: Generator
+    #enemy: Enemy
 
     #img = new Image()
 
-    #frame = 0
+    player = new Shooter()
+    bullets: Bullet[] = []
 
     constructor(slept: boolean) {
         super()
 
-        this.#img.src = ["assets/smartphone.png", "assets/energy.png"][state.day]
+        this.#img.src = ["assets/smartphone.png", "assets/energy.png", "assets/gamepad.png"][state.day]
 
-        this.#stage = stages[state.day]()
-
-        player = new Shooter()
+        this.#enemy = new [Enemy0, Enemy1, Enemy2, Enemy3][state.day](this)
 
         this.#start(slept)
     }
@@ -41,8 +40,8 @@ class SceneNight extends Scene {
         cvs.className = "canvas"
         DOM.container.appendChild(cvs)
 
-        this.#ctx = cvs.getContext("2d")!
-        this.#ctx.imageSmoothingEnabled = false
+        this.ctx = cvs.getContext("2d")!
+        this.ctx.imageSmoothingEnabled = false
     }
 
     #setupButton() {
@@ -185,14 +184,14 @@ class SceneNight extends Scene {
             this.#awakeness -= elapsedTime / 200
             DOM.awakeness.style.width = `${this.#awakeness}%`
 
-            this.#stage.next()
+            this.#enemy.update()
 
-            player.update(elapsedTime)
+            this.player.update(elapsedTime)
 
-            bullets = bullets.filter((b) => {
+            this.bullets = this.bullets.filter((b) => {
                 b.update(elapsedTime)
 
-                const isHit = b.r + player.r >= b.p.sub(player.p).magnitude()
+                const isHit = b.r + this.player.r >= b.p.sub(this.player.p).magnitude()
                 if (isHit) {
                     b.life = 0
                     this.#awakeness = Math.min(100, this.#awakeness + 10)
@@ -214,16 +213,17 @@ class SceneNight extends Scene {
     }
 
     #render() {
-        this.#ctx.clearRect(0, 0, 720, 720)
+        this.ctx.clearRect(0, 0, 720, 720)
 
-        this.#ctx.strokeStyle = "white"
-        this.#ctx.lineWidth = 14
-        this.#ctx.strokeRect(180, 180, 360, 360)
+        this.ctx.strokeStyle = "white"
+        this.ctx.lineWidth = 14
+        this.ctx.strokeRect(180, 180, 360, 360)
 
-        bullets.forEach((b) => b.render(this.#ctx))
-        this.#ctx.drawImage(this.#img, 360 - 96 + 48 * Math.sin(this.#frame++ / 24), 24, 144, 144)
+        this.bullets.forEach((b) => b.render(this.ctx))
 
-        player.render(this.#ctx)
+        this.#enemy.render(this.ctx)
+
+        this.player.render(this.ctx)
     }
 
     async #sleep() {
@@ -337,9 +337,6 @@ class Shooter {
     }
 }
 
-let player = new Shooter()
-let bullets: Bullet[] = []
-
 class Bullet {
     p: Vec
     #v: Vec
@@ -366,45 +363,208 @@ class Bullet {
     }
 }
 
-const stages = [
-    function* () {
-        bullets = []
+class Enemy {
+    protected p: Vec
+    protected gs: Generator[] = []
+    protected img = new Image()
 
-        yield* wait(500)
+    constructor(scene: SceneNight) {
+        this.p = new Vec(360, 64)
 
-        const p = new Vec(360, 64)
-        while (1) {
-            const v = player.p.sub(p).normalize().scale(8)
-            bullets.push(new Bullet(p, v))
-            yield* wait(1000)
+        const generators = ["G", "H", "I", "J"] as const
+
+        for (const generatorName of generators) {
+            if (generatorName in this) {
+                if (typeof (this as any)[generatorName] === "function") {
+                    this.gs.push(((this as any)[generatorName] as GeneratorFunction)(scene))
+                }
+            }
         }
-    },
-    function* () {
-        bullets = []
+    }
 
-        yield* wait(500)
+    update() {
+        this.gs = this.gs.filter((g) => !g.next().done)
+    }
 
-        const p = new Vec(360, 64)
+    render(ctx: CanvasRenderingContext2D) {
+        ctx.drawImage(this.img, this.p.x - 72, this.p.y - 72, 144, 144)
+    }
+}
+
+class Enemy0 extends Enemy {
+    constructor(scene: SceneNight) {
+        super(scene)
+        this.img.src = "assets/smartphone.png"
+    }
+
+    *G(scene: SceneNight) {
+        yield* Yields.wait(500)
+
         while (1) {
-            const v = player.p.sub(p).normalize().scale(8)
-            bullets.push(
-                new Bullet(p, v),
-                new Bullet(p, v.rotate(Math.PI / 13)),
-                new Bullet(p, v.rotate(-Math.PI / 13)),
+            const v = scene.player.p.sub(this.p).normalize().scale(8)
+            scene.bullets.push(
+                new Bullet(this.p, v),
+                new Bullet(this.p, v.rotate(Math.PI / 12)),
+                new Bullet(this.p, v.rotate(-Math.PI / 12)),
             )
-            yield* wait(250)
-
-            const v2 = player.p.sub(p).normalize().scale(8)
-            bullets.push(new Bullet(p, v2.rotate(Math.PI / 12)), new Bullet(p, v2.rotate(-Math.PI / 12)))
-            yield* wait(250)
+            yield* Yields.wait(1000)
         }
-    },
-]
+    }
 
-function* wait(ms: number) {
-    const startTime = performance.now()
-    yield
-    while (performance.now() - startTime < ms) {
-        yield
+    *H() {
+        while (1) {
+            const timer = new Yields.Timer(3000, (t) => t)
+
+            for (let { progress } = timer; progress < 1; { progress } = timer) {
+                this.p.x = Math.sin(progress * Math.PI * 2) * 50 + 360
+                yield
+            }
+        }
+    }
+}
+
+class Enemy1 extends Enemy {
+    constructor(scene: SceneNight) {
+        super(scene)
+        this.img.src = "assets/energy.png"
+    }
+
+    *G(scene: SceneNight) {
+        yield* Yields.wait(500)
+
+        while (1) {
+            const v = scene.player.p
+                .sub(this.p)
+                .normalize()
+                .scale(2 * Math.random() + 4)
+
+            scene.bullets.push(
+                new Bullet(this.p, v),
+                new Bullet(this.p, v.rotate(Math.PI / 13)),
+                new Bullet(this.p, v.rotate(-Math.PI / 13)),
+            )
+
+            yield* Yields.wait(500)
+
+            const v2 = scene.player.p
+                .sub(this.p)
+                .normalize()
+                .scale(2 * Math.random() + 4)
+
+            scene.bullets.push(
+                new Bullet(this.p, v2.rotate(Math.PI / 12)),
+                new Bullet(this.p, v2.rotate(-Math.PI / 12)),
+            )
+
+            yield* Yields.wait(500)
+        }
+    }
+
+    *H() {
+        while (1) {
+            const timer = new Yields.Timer(6000, (t) => t)
+
+            for (let { progress } = timer; progress < 1; { progress } = timer) {
+                this.p = Vec.arg(progress * Math.PI * 2)
+                    .scale(250)
+                    .add(new Vec(360, 360))
+                yield
+            }
+        }
+    }
+}
+
+class Enemy2 extends Enemy {
+    constructor(scene: SceneNight) {
+        super(scene)
+        this.img.src = "assets/gamepad.png"
+    }
+
+    *G(scene: SceneNight) {
+        yield* Yields.wait(500)
+
+        while (1) {
+            const num = ~~(13 * Math.random() + 10)
+
+            const v = scene.player.p.sub(this.p).normalize().scale(8)
+
+            for (let i = 0; i < num; i++) {
+                scene.bullets.push(
+                    new Bullet(this.p, v.rotate(Math.PI * 2 * (i / num))),
+                    new Bullet(this.p, v.rotate(-Math.PI * 2 * (i / num))),
+                )
+                yield* Yields.wait(10)
+            }
+        }
+    }
+
+    *H() {
+        while (1) {
+            const timer = new Yields.Timer(6000, (t) => t)
+
+            for (let { progress } = timer; progress < 1; { progress } = timer) {
+                this.p = Vec.arg(progress * Math.PI * 2)
+                    .scale(250)
+                    .add(new Vec(360, 360))
+                yield
+            }
+        }
+    }
+}
+
+class Enemy3 extends Enemy {
+    constructor(scene: SceneNight) {
+        super(scene)
+        this.img.src = "assets/gamepad.png"
+    }
+
+    *G(scene: SceneNight) {
+        yield* Yields.wait(500)
+
+        while (1) {
+            const num = 20 // Number of bullets in a spiral
+            const speed = 5 // Speed of bullets
+            const rotationSpeed = Math.PI / 30 // Rotation speed of the spiral
+
+            for (let i = 0; i < num; i++) {
+                const angle = i * rotationSpeed
+                const v = Vec.arg(angle).scale(speed)
+
+                scene.bullets.push(new Bullet(this.p, v))
+                yield* Yields.wait(100) // Delay between each bullet
+            }
+        }
+    }
+
+    *H() {
+        while (1) {
+            yield* this.#zigzagMovement()
+            yield* this.#resetPosition()
+        }
+    }
+
+    *#zigzagMovement() {
+        const timer = new Yields.Timer(8000, (t) => t)
+
+        for (let { progress } = timer; progress < 1; { progress } = timer) {
+            // Enemy moves in a zigzag pattern
+            const zigzag = Math.sin(progress * Math.PI * 4) * 100
+            this.p.x = 360 + zigzag
+            this.p.y = 64 + progress * 300
+            yield
+        }
+    }
+
+    *#resetPosition() {
+        const timer = new Yields.Timer(1000) // 1 second to return
+        const startPosition = this.p
+        const endPosition = new Vec(360, 64)
+
+        for (let { progress } = timer; progress < 1; { progress } = timer) {
+            this.p = startPosition.lerp(endPosition, progress)
+            yield
+        }
+
+        this.p = endPosition // Ensure exact position at the end
     }
 }

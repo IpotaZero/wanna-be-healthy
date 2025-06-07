@@ -62,4 +62,8 @@ class Vec {
 
         return new Vec(this.x / mag, this.y / mag)
     }
+
+    lerp(end: Vec, progress: number): Vec {
+        return this.add(end.sub(this).scale(progress))
+    }
 }
