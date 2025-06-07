@@ -29,7 +29,11 @@ class SceneDay extends Scene {
         const elapsed = performance.now() - this.#startTime;
         const progress = (elapsed - time * 1000) / 15;
         element.style.right = `${progress}%`;
-        if (mouse.clicked.has("left")) {
+        const isHit = mouse.clicked.has("left") ||
+            keyboard.pushed.has("KeyZ") ||
+            keyboard.pushed.has("Enter") ||
+            keyboard.pushed.has("Space");
+        if (isHit) {
             const gap = Math.abs(100 - progress);
             if (2 <= gap && gap <= 4) {
                 this.#goalElement.dataset.score = "";

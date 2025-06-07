@@ -254,7 +254,7 @@ class Shooter {
     render(ctx) {
         ctx.beginPath();
         ctx.fillStyle = "cyan";
-        ctx.arc(this.p.x, this.p.y, this.r, 0, Math.PI * 2);
+        ctx.arc(this.p.x, this.p.y, this.r + 4, 0, Math.PI * 2);
         ctx.fill();
         // ctx.drawImage(this.#image, this.p.x - 32, this.p.y - 32, 64, 64)
     }
@@ -318,8 +318,8 @@ class Enemy0 extends Enemy {
     *H() {
         while (1) {
             const timer = new Yields.Timer(3000, (t) => t);
-            for (let { progress } = timer; progress < 1; { progress } = timer) {
-                this.p.x = Math.sin(progress * Math.PI * 2) * 50 + 360;
+            while (timer.progress < 1) {
+                this.p.x = Math.sin(timer.progress * Math.PI * 2) * 50 + 360;
                 yield;
             }
         }
@@ -350,8 +350,8 @@ class Enemy1 extends Enemy {
     *H() {
         while (1) {
             const timer = new Yields.Timer(6000, (t) => t);
-            for (let { progress } = timer; progress < 1; { progress } = timer) {
-                this.p = Vec.arg(progress * Math.PI * 2)
+            while (timer.progress < 1) {
+                this.p = Vec.arg(timer.progress * Math.PI * 2)
                     .scale(250)
                     .add(new Vec(360, 360));
                 yield;
@@ -378,8 +378,8 @@ class Enemy2 extends Enemy {
     *H() {
         while (1) {
             const timer = new Yields.Timer(6000, (t) => t);
-            for (let { progress } = timer; progress < 1; { progress } = timer) {
-                this.p = Vec.arg(progress * Math.PI * 2)
+            while (timer.progress < 1) {
+                this.p = Vec.arg(timer.progress * Math.PI * 2)
                     .scale(250)
                     .add(new Vec(360, 360));
                 yield;
@@ -390,46 +390,30 @@ class Enemy2 extends Enemy {
 class Enemy3 extends Enemy {
     constructor(scene) {
         super(scene);
-        this.img.src = "assets/gamepad.png";
+        this.img.src = "assets/heart.png";
     }
     *G(scene) {
         yield* Yields.wait(500);
+        const left = new Vec(180, 64);
+        const right = new Vec(540, 64);
+        const num = 10; // Number of bullets in a spiral
         while (1) {
-            const num = 20; // Number of bullets in a spiral
-            const speed = 5; // Speed of bullets
-            const rotationSpeed = Math.PI / 30; // Rotation speed of the spiral
-            for (let i = 0; i < num; i++) {
-                const angle = i * rotationSpeed;
-                const v = Vec.arg(angle).scale(speed);
-                scene.bullets.push(new Bullet(this.p, v));
-                yield* Yields.wait(100); // Delay between each bullet
+            const gap = ~~((Math.random() * num) / 2 + num / 4);
+            for (let i = 0; i < num + 1; i++) {
+                if (i === gap)
+                    continue;
+                scene.bullets.push(new Bullet(left.lerp(right, i / num), new Vec(0, 4)));
             }
+            yield* Yields.wait(800);
         }
     }
     *H() {
         while (1) {
-            yield* this.#zigzagMovement();
-            yield* this.#resetPosition();
+            const timer = new Yields.Timer(2000, (t) => t);
+            while (timer.progress < 1) {
+                this.p.y = Math.sin(Math.PI * 2 * timer.progress) * 48 + 96;
+                yield;
+            }
         }
-    }
-    *#zigzagMovement() {
-        const timer = new Yields.Timer(8000, (t) => t);
-        for (let { progress } = timer; progress < 1; { progress } = timer) {
-            // Enemy moves in a zigzag pattern
-            const zigzag = Math.sin(progress * Math.PI * 4) * 100;
-            this.p.x = 360 + zigzag;
-            this.p.y = 64 + progress * 300;
-            yield;
-        }
-    }
-    *#resetPosition() {
-        const timer = new Yields.Timer(1000); // 1 second to return
-        const startPosition = this.p;
-        const endPosition = new Vec(360, 64);
-        for (let { progress } = timer; progress < 1; { progress } = timer) {
-            this.p = startPosition.lerp(endPosition, progress);
-            yield;
-        }
-        this.p = endPosition; // Ensure exact position at the end
     }
 }
