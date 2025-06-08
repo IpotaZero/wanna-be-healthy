@@ -21,16 +21,14 @@ class Ielement extends HTMLElement {
         const uniqueClass = `i-element-${Ielement.#idCount++}`;
         this.classList.add(uniqueClass);
         if (css) {
-            let style = `.${uniqueClass} {\n`;
-            style += this.#createStyleString(1, css);
-            this.styleElement.textContent = style + "}";
+            this.styleElement.textContent = `.${uniqueClass} {\n${this.#createStyleString(1, css)}\n}`;
             document.head.appendChild(this.styleElement);
         }
     }
     #createStyleString(depth, css) {
         let style = "";
         Object.entries(css).forEach(([property, value], i, list) => {
-            if (typeof value == "string") {
+            if (typeof value === "string") {
                 style += " ".repeat(4 * depth) + `${this.#toKebabCase(property)}: ${value};`;
                 if (i != list.length - 1)
                     style += "\n";
@@ -43,7 +41,7 @@ class Ielement extends HTMLElement {
                     "\t".repeat(depth) +
                     `}`;
         });
-        return style + "\n";
+        return style;
     }
     remove() {
         ;
@@ -66,11 +64,11 @@ class Iimage extends Ielement {
         super(container, options);
         this.ready = new Promise((resolve) => {
             const img = new Image();
-            img.src = path;
             img.onload = () => {
                 this.appendChild(img);
                 resolve();
             };
+            img.src = path;
         });
         container.appendChild(this);
     }

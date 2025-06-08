@@ -26,7 +26,7 @@ class Itext extends Ielement {
 
         this.#voice = options.voice ?? null
 
-        this.#wrapper.className = "wrapper"
+        this.#wrapper.className = "i-text-wrapper"
         this.appendChild(this.#wrapper)
 
         this.#setupText(String(text), options.typing ?? true)
@@ -65,7 +65,7 @@ class Itext extends Ielement {
             if (node.nodeType === Node.TEXT_NODE) {
                 const text = node.textContent
                 if (text) {
-                    element.replaceChild(new Ichar(text), node)
+                    element.replaceChild(new Itext.Char(text), node)
                 }
             } else if ((node as HTMLElement).tagName === "RUBY") {
                 const temp = document.createElement("span")
@@ -79,7 +79,7 @@ class Itext extends Ielement {
 
                 const text = temp.innerText
 
-                element.replaceChild(new Iruby(text, ruby), node)
+                element.replaceChild(new Itext.Ruby(text, ruby), node)
             } else if (node.nodeType === Node.ELEMENT_NODE) {
                 // 要素ノードの場合は、その子要素も処理
                 this.#processTextNodes(node)
@@ -91,8 +91,8 @@ class Itext extends Ielement {
         // ボイス再生
         this.#voice && this.#frame++ % 2 == 0 && this.#voice.play()
 
-        const spans = [...this.#wrapper.querySelectorAll(".i-text-component")].filter(
-            (ichar) => !(ichar as Ichar | Iruby).isEnd,
+        const spans = ([...this.#wrapper.querySelectorAll(".i-text-component")] as (Itext.Char | Itext.Ruby)[]).filter(
+            (ichar) => !ichar.isEnd,
         )
 
         if (spans.length === 0) {
@@ -100,7 +100,7 @@ class Itext extends Ielement {
             return
         }
 
-        const mainSpan = spans[0] as Ichar | Iruby
+        const mainSpan = spans[0]
 
         mainSpan && mainSpan.update()
     }
@@ -112,59 +112,68 @@ class Itext extends Ielement {
         this.isEnd = true
         this.#resolve()
     }
+
+    override remove(): void {
+        super.remove()
+        clearInterval(this.#interval)
+        this.#resolve()
+        this.isEnd = true
+    }
 }
 
 customElements.define("i-text", Itext)
 
-class Ichar extends HTMLElement {
-    isEnd = false
+namespace Itext {
+    export class Char extends HTMLElement {
+        isEnd = false
 
-    #text: string
-    #i = 0
+        #text: string
+        #i = 0
 
-    constructor(text: string) {
-        super()
-        this.#text = text
+        constructor(text: string) {
+            super()
+            this.#text = text
 
-        this.className = "i-text-component"
-    }
+            this.className = "i-text-component"
+        }
 
-    update() {
-        this.innerText = this.#text.slice(0, this.#i)
+        update() {
+            this.innerText = this.#text.slice(0, this.#i)
 
-        this.#i++
+            this.#i++
 
-        this.isEnd = this.#text.length === this.#i - 1
-    }
-}
-
-customElements.define("i-char", Ichar)
-
-class Iruby extends HTMLElement {
-    isEnd = false
-
-    #text: string
-    #ruby: string
-
-    #i = 0
-
-    constructor(text: string, ruby: string) {
-        super()
-        this.#text = text
-        this.#ruby = ruby
-
-        this.className = "i-text-component"
-    }
-
-    update() {
-        this.innerHTML = `<ruby>${this.#text.slice(0, this.#i)}<rt>${this.#ruby.slice(0, this.#i)}</rt></ruby>`
-
-        this.#i++
-
-        if (Math.max(this.#text.length, this.#ruby.length) === this.#i - 1) {
-            this.isEnd = true
+            this.isEnd = this.#text.length === this.#i - 1
         }
     }
-}
 
-customElements.define("i-ruby", Iruby)
+    customElements.define("i-char", Char)
+
+    export class Ruby extends HTMLElement {
+        isEnd = false
+
+        #text: string
+        #ruby: string
+
+        #i = 0
+
+        constructor(text: string, ruby: string) {
+            super()
+            this.#text = text
+            this.#ruby = ruby
+
+            this.className = "i-text-component"
+        }
+
+        update() {
+            this.innerHTML = `<ruby>${this.#text.slice(0, this.#i)}<rt>${this.#ruby.slice(0, this.#i)}</rt></ruby>`
+
+            this.#i++
+
+            if (Math.max(this.#text.length, this.#ruby.length) === this.#i - 1) {
+                this.isEnd = true
+            }
+        }
+    }
+
+    customElements.define("i-ruby", Ruby)
+}

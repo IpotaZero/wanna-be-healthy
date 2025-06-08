@@ -78,7 +78,7 @@ class Input {
         this.focusState.justBlurred = false
 
         if (!this.isAvailable) {
-            mouse.down.clear()
+            this.mouse.down.clear()
             this.keyboard.pressed.clear()
         }
     }

@@ -5,7 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
     BGM.init();
     // currentScene = new SceneTitle()
     // currentScene = new SceneDay()
-    currentScene = new SceneNight(true);
+    // currentScene = new SceneNight(true)
+    // currentScene = new SceneEnding()
+    currentScene = new ScenePreTitle();
     requestAnimationFrame(mainLoop);
 });
 class DOM {

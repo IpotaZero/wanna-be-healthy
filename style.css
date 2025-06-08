@@ -101,6 +101,7 @@ body {
 }
 
 .blink-triangle::after {
+    position: relative;
     content: "/";
     animation: blink-triangle 1s infinite;
 }

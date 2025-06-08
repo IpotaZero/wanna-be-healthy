@@ -11,7 +11,7 @@ class Itext extends Ielement {
     constructor(container, text, options = {}) {
         super(container, options);
         this.#voice = options.voice ?? null;
-        this.#wrapper.className = "wrapper";
+        this.#wrapper.className = "i-text-wrapper";
         this.appendChild(this.#wrapper);
         this.#setupText(String(text), options.typing ?? true);
         this.ready = new Promise((resolve) => {
@@ -41,7 +41,7 @@ class Itext extends Ielement {
             if (node.nodeType === Node.TEXT_NODE) {
                 const text = node.textContent;
                 if (text) {
-                    element.replaceChild(new Ichar(text), node);
+                    element.replaceChild(new Itext.Char(text), node);
                 }
             }
             else if (node.tagName === "RUBY") {
@@ -51,7 +51,7 @@ class Itext extends Ielement {
                 const ruby = rt.innerText;
                 rt.remove();
                 const text = temp.innerText;
-                element.replaceChild(new Iruby(text, ruby), node);
+                element.replaceChild(new Itext.Ruby(text, ruby), node);
             }
             else if (node.nodeType === Node.ELEMENT_NODE) {
                 // 要素ノードの場合は、その子要素も処理
@@ -77,41 +77,51 @@ class Itext extends Ielement {
         this.isEnd = true;
         this.#resolve();
     }
+    remove() {
+        super.remove();
+        clearInterval(this.#interval);
+        this.#resolve();
+        this.isEnd = true;
+    }
 }
 customElements.define("i-text", Itext);
-class Ichar extends HTMLElement {
-    isEnd = false;
-    #text;
-    #i = 0;
-    constructor(text) {
-        super();
-        this.#text = text;
-        this.className = "i-text-component";
-    }
-    update() {
-        this.innerText = this.#text.slice(0, this.#i);
-        this.#i++;
-        this.isEnd = this.#text.length === this.#i - 1;
-    }
-}
-customElements.define("i-char", Ichar);
-class Iruby extends HTMLElement {
-    isEnd = false;
-    #text;
-    #ruby;
-    #i = 0;
-    constructor(text, ruby) {
-        super();
-        this.#text = text;
-        this.#ruby = ruby;
-        this.className = "i-text-component";
-    }
-    update() {
-        this.innerHTML = `<ruby>${this.#text.slice(0, this.#i)}<rt>${this.#ruby.slice(0, this.#i)}</rt></ruby>`;
-        this.#i++;
-        if (Math.max(this.#text.length, this.#ruby.length) === this.#i - 1) {
-            this.isEnd = true;
+(function (Itext) {
+    class Char extends HTMLElement {
+        isEnd = false;
+        #text;
+        #i = 0;
+        constructor(text) {
+            super();
+            this.#text = text;
+            this.className = "i-text-component";
+        }
+        update() {
+            this.innerText = this.#text.slice(0, this.#i);
+            this.#i++;
+            this.isEnd = this.#text.length === this.#i - 1;
         }
     }
-}
-customElements.define("i-ruby", Iruby);
+    Itext.Char = Char;
+    customElements.define("i-char", Char);
+    class Ruby extends HTMLElement {
+        isEnd = false;
+        #text;
+        #ruby;
+        #i = 0;
+        constructor(text, ruby) {
+            super();
+            this.#text = text;
+            this.#ruby = ruby;
+            this.className = "i-text-component";
+        }
+        update() {
+            this.innerHTML = `<ruby>${this.#text.slice(0, this.#i)}<rt>${this.#ruby.slice(0, this.#i)}</rt></ruby>`;
+            this.#i++;
+            if (Math.max(this.#text.length, this.#ruby.length) === this.#i - 1) {
+                this.isEnd = true;
+            }
+        }
+    }
+    Itext.Ruby = Ruby;
+    customElements.define("i-ruby", Ruby);
+})(Itext || (Itext = {}));
