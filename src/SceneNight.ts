@@ -215,7 +215,7 @@ class SceneNight extends Scene {
     #render() {
         this.ctx.clearRect(0, 0, 720, 720)
 
-        this.ctx.strokeStyle = "white"
+        this.ctx.strokeStyle = "whitesmoke"
         this.ctx.lineWidth = 14
         this.ctx.strokeRect(180, 180, 360, 360)
 
@@ -357,7 +357,7 @@ class Bullet {
         // ctx.drawImage(this.#image, 0, 0, 64, 64)
 
         ctx.beginPath()
-        ctx.fillStyle = "white"
+        ctx.fillStyle = "whitesmoke"
         ctx.arc(this.p.x, this.p.y, this.r, 0, Math.PI * 2)
         ctx.fill()
     }
@@ -539,12 +539,24 @@ class Enemy3 extends Enemy {
 
     *H() {
         while (1) {
-            const timer = new Yields.Timer(2000, (t) => t)
+            const timer = new Yields.Timer(2000)
 
             while (timer.progress < 1) {
                 this.p.y = Math.sin(Math.PI * 2 * timer.progress) * 48 + 96
                 yield
             }
+        }
+    }
+
+    *I(scene: SceneNight) {
+        yield* Yields.wait(500)
+
+        while (1) {
+            const v = scene.player.p.sub(this.p).normalize().scale(6)
+
+            scene.bullets.push(new Bullet(this.p, v))
+
+            yield* Yields.wait(800)
         }
     }
 }
