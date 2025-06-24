@@ -24,6 +24,8 @@ class Ielement extends HTMLElement {
 
         if (options.className) this.className += " " + options.className
 
+        if (!container) console.log("Ielement created", this, container)
+
         container.appendChild(this)
     }
 
@@ -83,6 +85,8 @@ class Iimage extends Ielement {
     constructor(container: HTMLElement, path: string, options: { css?: NestedCSS; className?: string } = {}) {
         super(container, options)
 
+        // console.log(container)
+
         this.ready = new Promise((resolve) => {
             const img = new Image()
             img.onload = () => {
@@ -92,7 +96,7 @@ class Iimage extends Ielement {
             img.src = path
         })
 
-        container.appendChild(this)
+        // container.appendChild(this)
     }
 }
 

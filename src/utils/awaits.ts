@@ -1,5 +1,3 @@
-const validKeys = ["Enter", "Space", "KeyZ"]
-
 class Awaits {
     static #cancels: (() => void)[] = []
 
@@ -44,6 +42,8 @@ class Awaits {
             const removeEventListener = () => {
                 document.removeEventListener("keydown", handler)
             }
+
+            const validKeys = ["Enter", "Space", "KeyZ"]
 
             const handler = (e: KeyboardEvent) => {
                 if (validKeys.includes(e.code)) {

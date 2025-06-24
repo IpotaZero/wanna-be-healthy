@@ -34,6 +34,7 @@ type NestedCSS = {
 
     display?: "none" | "flex" | "inline" | "block" | "grid" | "inline-block"
     position?: "static" | "relative" | "absolute" | "sticky" | "fixed"
+    cursor?: "pointer"
 } & {
     [key in keyof CSSStyleDeclaration]?: Partial<CSSStyleDeclaration> | NestedCSS
 }

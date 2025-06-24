@@ -36,6 +36,7 @@ class SceneDay extends Scene {
         if (isHit) {
             const gap = Math.abs(100 - progress);
             if (2 <= gap && gap <= 4) {
+                // SE.great.play()
                 this.#goalElement.dataset.score = "";
                 requestAnimationFrame(() => {
                     this.#goalElement.dataset.score = "good";
@@ -45,6 +46,17 @@ class SceneDay extends Scene {
             }
             if (gap <= 2) {
                 this.#awakeness = Math.min(100, this.#awakeness + 5);
+                document.querySelector(".character")?.remove();
+                new Iimage(DOM.container, "assets/hand-up.png", {
+                    css: {
+                        position: "absolute",
+                        top: "30%",
+                        left: "10%",
+                        height: "50%",
+                    },
+                    className: "character",
+                });
+                // SE.great.play()
                 this.#goalElement.dataset.score = "";
                 requestAnimationFrame(() => {
                     this.#goalElement.dataset.score = "great";
@@ -55,6 +67,16 @@ class SceneDay extends Scene {
         }
         if (progress > 105) {
             this.#awakeness = Math.max(0, this.#awakeness - 5);
+            document.querySelector(".character")?.remove();
+            new Iimage(DOM.container, "assets/classroom.png", {
+                css: {
+                    position: "absolute",
+                    top: "30%",
+                    left: "10%",
+                    height: "50%",
+                },
+                className: "character",
+            });
             this.#goalElement.dataset.score = "";
             requestAnimationFrame(() => {
                 this.#goalElement.dataset.score = "bad";
@@ -89,13 +111,23 @@ class SceneDay extends Scene {
     #initDOM() {
         DOM.setParameter();
         DOM.awakeness.style.width = "100%";
+        new Iimage(DOM.container, "assets/classroom.png", {
+            css: {
+                position: "absolute",
+                top: "30%",
+                left: "10%",
+                height: "50%",
+            },
+            className: "character",
+        });
         const layer = new Ielement(DOM.container, {
             css: {
                 position: "absolute",
                 right: "0",
-                width: "85%",
+                width: "75%",
                 height: "24vh",
                 // border: "#111 solid 0.4vh",
+                zIndex: "100",
             },
         });
         this.#goalElement = document.createElement("span");

@@ -14,6 +14,8 @@ class Ielement extends HTMLElement {
         this.#setCSS(options.css);
         if (options.className)
             this.className += " " + options.className;
+        if (!container)
+            console.log("Ielement created", this, container);
         container.appendChild(this);
     }
     #setCSS(css) {
@@ -62,6 +64,7 @@ class Iimage extends Ielement {
     ready;
     constructor(container, path, options = {}) {
         super(container, options);
+        // console.log(container)
         this.ready = new Promise((resolve) => {
             const img = new Image();
             img.onload = () => {
@@ -70,7 +73,7 @@ class Iimage extends Ielement {
             };
             img.src = path;
         });
-        container.appendChild(this);
+        // container.appendChild(this)
     }
 }
 customElements.define("i-image", Iimage);

@@ -1,5 +1,4 @@
 "use strict";
-const validKeys = ["Enter", "Space", "KeyZ"];
 class Awaits {
     static #cancels = [];
     static cancel() {
@@ -36,6 +35,7 @@ class Awaits {
             const removeEventListener = () => {
                 document.removeEventListener("keydown", handler);
             };
+            const validKeys = ["Enter", "Space", "KeyZ"];
             const handler = (e) => {
                 if (validKeys.includes(e.code)) {
                     removeEventListener();

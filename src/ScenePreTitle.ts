@@ -5,7 +5,7 @@ class ScenePreTitle extends Scene {
     }
 
     async #start() {
-        const text = new Itext(DOM.container, "Presented by MCR" + "\u200B".repeat(15) + "<br><br>Please Click...", {
+        const text = new Itext(DOM.container, "Presented by MCR" + "\u200B".repeat(10) + "<br><br>Please Click...", {
             css: {
                 height: "3em",
 
@@ -19,7 +19,16 @@ class ScenePreTitle extends Scene {
 
         await Awaits.ok()
 
-        await Awaits.fade(1000)
+        const click = new Audio("assets/sounds/クリック.mp3")
+        click.play()
+
+        await Awaits.sleep(400)
+
+        const se = new Audio("assets/sounds/MCR.wav")
+        se.volume = 0.4
+        se.play()
+
+        await Awaits.fade(1500)
 
         currentScene = new SceneTitle()
     }
