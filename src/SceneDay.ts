@@ -1,10 +1,8 @@
 class SceneDay extends Scene {
     #awakeness = 100
     #mode: "main" | "game-over" = "game-over"
-
-    #musicData
+    #musicData: { element: HTMLElement; time: number }[] = []
     #startTime = NaN
-
     #goalElement!: HTMLElement
 
     constructor() {
@@ -18,9 +16,7 @@ class SceneDay extends Scene {
 
         this.#musicData = this.#musicData.filter(this.#processMusicData.bind(this))
 
-        // update awakeness
-        this.#awakeness -= elapsedTime / 120
-        DOM.awakeness.style.width = `${this.#awakeness}%`
+        this.#updateAwakeness(elapsedTime)
 
         if (this.#musicData.length === 0) {
             this.#study()
@@ -31,83 +27,80 @@ class SceneDay extends Scene {
         Input.update()
     }
 
+    #updateAwakeness(elapsedTime: number) {
+        this.#awakeness -= elapsedTime / 120
+        DOM.awakeness.style.width = `${this.#awakeness}%`
+    }
+
     #processMusicData({ element, time }: { element: HTMLElement; time: number }) {
         const elapsed = performance.now() - this.#startTime
-
         const progress = (elapsed - time * 1000) / 15
         element.style.right = `${progress}%`
 
+        if (this.#isNoteHit(progress)) {
+            element.remove()
+            return false
+        }
+
+        if (progress > 105) {
+            this.#handleMiss(element)
+            return false
+        }
+
+        return true
+    }
+
+    #isNoteHit(progress: number): boolean {
         const isHit =
             mouse.clicked.has("left") ||
             keyboard.pushed.has("KeyZ") ||
             keyboard.pushed.has("Enter") ||
             keyboard.pushed.has("Space")
 
-        if (isHit) {
-            const gap = Math.abs(100 - progress)
+        if (!isHit) return false
 
-            if (2 <= gap && gap <= 4) {
-                // SE.great.play()
+        const gap = Math.abs(100 - progress)
 
-                this.#goalElement.dataset.score = ""
-                requestAnimationFrame(() => {
-                    this.#goalElement.dataset.score = "good"
-                })
-
-                element.remove()
-                return false
-            }
-
-            if (gap <= 2) {
-                this.#awakeness = Math.min(100, this.#awakeness + 5)
-
-                document.querySelector(".character")?.remove()
-                new Iimage(DOM.container, "assets/hand-up.png", {
-                    css: {
-                        position: "absolute",
-                        top: "30%",
-                        left: "10%",
-                        height: "50%",
-                    },
-                    className: "character",
-                })
-
-                // SE.great.play()
-
-                this.#goalElement.dataset.score = ""
-                requestAnimationFrame(() => {
-                    this.#goalElement.dataset.score = "great"
-                })
-
-                element.remove()
-                return false
-            }
+        if (2 <= gap && gap <= 4) {
+            this.#showScore("good")
+            return true
         }
 
-        if (progress > 105) {
-            this.#awakeness = Math.max(0, this.#awakeness - 5)
-
-            document.querySelector(".character")?.remove()
-            new Iimage(DOM.container, "assets/classroom.png", {
-                css: {
-                    position: "absolute",
-                    top: "30%",
-                    left: "10%",
-                    height: "50%",
-                },
-                className: "character",
-            })
-
-            this.#goalElement.dataset.score = ""
-            requestAnimationFrame(() => {
-                this.#goalElement.dataset.score = "bad"
-            })
-
-            element.remove()
-            return false
+        if (gap <= 2) {
+            this.#awakeness = Math.min(100, this.#awakeness + 5)
+            this.#swapCharacter("assets/hand-up.png")
+            this.#showScore("great")
+            return true
         }
 
-        return true
+        return false
+    }
+
+    #showScore(score: string) {
+        this.#goalElement.dataset.score = ""
+        requestAnimationFrame(() => {
+            this.#goalElement.dataset.score = score
+        })
+    }
+
+    #swapCharacter(imagePath: string) {
+        document.querySelector(".character")?.remove()
+        new Iimage(DOM.container, imagePath, {
+            css: {
+                position: "absolute",
+                top: "30%",
+                left: "10%",
+                height: "50%",
+            },
+            className: "character",
+        })
+    }
+
+    #handleMiss(element: HTMLElement) {
+        this.#awakeness = Math.max(0, this.#awakeness - 5)
+        this.#swapCharacter("assets/classroom.png")
+        this.#showScore("bad")
+        element.remove()
     }
 
     async #start() {
@@ -135,8 +128,9 @@ class SceneDay extends Scene {
     }
 
     #createMusicData() {
-        return musicDataList[0].notes.map((tick) => ({
-            time: (tick / 480) * (60 / musicDataList[0].bpm) - 1.2755,
+        const { bpm, notes } = musicDataList[0]
+        return notes.map((tick) => ({
+            time: (tick / 480) * (60 / bpm) - 1.2755,
             element: document.createElement("span"),
         }))
     }
@@ -145,15 +139,7 @@ class SceneDay extends Scene {
         DOM.setParameter()
         DOM.awakeness.style.width = "100%"
 
-        new Iimage(DOM.container, "assets/classroom.png", {
-            css: {
-                position: "absolute",
-                top: "30%",
-                left: "10%",
-                height: "50%",
-            },
-            className: "character",
-        })
+        this.#swapCharacter("assets/classroom.png")
 
         const layer = new Ielement(DOM.container, {
             css: {
@@ -161,7 +147,6 @@ class SceneDay extends Scene {
                 right: "0",
                 width: "75%",
                 height: "24vh",
-                // border: "#111 solid 0.4vh",
                 zIndex: "100",
             },
         })
@@ -170,7 +155,6 @@ class SceneDay extends Scene {
         this.#goalElement.id = "goal"
         this.#goalElement.className = "note"
         this.#goalElement.style.right = "100%"
-
         layer.appendChild(this.#goalElement)
 
         this.#musicData.forEach(({ element }) => {
@@ -188,7 +172,6 @@ class SceneDay extends Scene {
 
     async #study() {
         this.#mode = "game-over"
-
         await Awaits.sleep(1000)
 
         const text = new Itext(DOM.container, "いねむりせず べんきょう した......!", {
@@ -201,16 +184,13 @@ class SceneDay extends Scene {
         text.classList.add("blink-triangle")
 
         await Awaits.ok()
-
         await Awaits.fade(1000)
         currentScene = new SceneNight(false)
     }
 
     async #sleep() {
         BGM.fadeOut(1)
-
         this.#mode = "game-over"
-
         await Awaits.sleep(1000)
 
         const text = new Itext(DOM.container, "いねむり して しまった......", {
@@ -223,7 +203,6 @@ class SceneDay extends Scene {
         text.classList.add("blink-triangle")
 
         await Awaits.ok()
-
         await Awaits.fade(1000)
         currentScene = new SceneNight(true)
     }
