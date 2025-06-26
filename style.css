@@ -43,7 +43,7 @@ body {
     justify-content: center;
 
     height: 100%;
-    width: 100%;
+    width: 100vw;
     /* aspect-ratio: 16/9; */
 
     overflow: hidden;

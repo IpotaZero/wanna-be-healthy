@@ -27,15 +27,16 @@ class SceneDay extends Scene {
         this.#awakeness -= elapsedTime / 120;
         DOM.awakeness.style.width = `${this.#awakeness}%`;
     }
-    #processMusicData({ element, time }) {
+    #processMusicData({ element, time }, i) {
         const elapsed = performance.now() - this.#startTime;
-        const progress = (elapsed - time * 1000) / 15;
-        element.style.right = `${progress}%`;
+        const progress = 100 - (elapsed - time * 1000) / 15;
+        element.style.right = `${100 - progress}%`;
+        // i === 0 && console.log(progress)
         if (this.#isNoteHit(progress)) {
             element.remove();
             return false;
         }
-        if (progress > 105) {
+        if (progress < -5) {
             this.#handleMiss(element);
             return false;
         }
@@ -48,7 +49,7 @@ class SceneDay extends Scene {
             keyboard.pushed.has("Space");
         if (!isHit)
             return false;
-        const gap = Math.abs(100 - progress);
+        const gap = Math.abs(progress);
         if (2 <= gap && gap <= 4) {
             this.#showScore("good");
             return true;
@@ -130,7 +131,7 @@ class SceneDay extends Scene {
         layer.appendChild(this.#goalElement);
         this.#musicData.forEach(({ element }) => {
             element.className = "note";
-            element.style.right = "200%";
+            element.style.right = "-200%";
             layer.appendChild(element);
         });
         const explain = new Itext(DOM.container, "よき タイミングで クリック して いしきを たもて!", {

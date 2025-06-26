@@ -32,17 +32,19 @@ class SceneDay extends Scene {
         DOM.awakeness.style.width = `${this.#awakeness}%`
     }
 
-    #processMusicData({ element, time }: { element: HTMLElement; time: number }) {
+    #processMusicData({ element, time }: { element: HTMLElement; time: number }, i: number) {
         const elapsed = performance.now() - this.#startTime
-        const progress = (elapsed - time * 1000) / 15
-        element.style.right = `${progress}%`
+        const progress = 100 - (elapsed - time * 1000) / 15
+        element.style.right = `${100 - progress}%`
+
+        // i === 0 && console.log(progress)
 
         if (this.#isNoteHit(progress)) {
             element.remove()
             return false
         }
 
-        if (progress > 105) {
+        if (progress < -5) {
             this.#handleMiss(element)
             return false
         }
@@ -59,7 +61,7 @@ class SceneDay extends Scene {
 
         if (!isHit) return false
 
-        const gap = Math.abs(100 - progress)
+        const gap = Math.abs(progress)
 
         if (2 <= gap && gap <= 4) {
             this.#showScore("good")
@@ -164,7 +166,7 @@ class SceneDay extends Scene {
 
         this.#musicData.forEach(({ element }) => {
             element.className = "note"
-            element.style.right = "200%"
+            element.style.right = "-200%"
             layer.appendChild(element)
         })
 

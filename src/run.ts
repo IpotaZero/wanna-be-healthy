@@ -4,10 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
     Input.init()
     BGM.init()
     // currentScene = new SceneTitle()
-    // currentScene = new SceneDay()
+    currentScene = new SceneDay()
     // currentScene = new SceneNight(true)
     // currentScene = new SceneEnding()
-    currentScene = new ScenePreTitle()
+    // currentScene = new ScenePreTitle()
     requestAnimationFrame(mainLoop)
 })
 
@@ -54,7 +54,7 @@ const state = {
     dark: [] as number[],
     usedSleepingMedicine: true,
     OD: false,
-    day: 3,
+    day: 0,
     wannaMedicine: 0,
 }
 
