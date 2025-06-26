@@ -14,8 +14,6 @@ class Ielement extends HTMLElement {
         this.#setCSS(options.css);
         if (options.className)
             this.className += " " + options.className;
-        if (!container)
-            console.log("Ielement created", this, container);
         container.appendChild(this);
     }
     #setCSS(css) {

@@ -85,6 +85,9 @@ class SceneDay extends Scene {
 
     #swapCharacter(imagePath: string) {
         document.querySelector(".character")?.remove()
+
+        const className = imagePath.includes("hand-up") ? " character-appear" : ""
+
         new Iimage(DOM.container, imagePath, {
             css: {
                 position: "absolute",
@@ -92,7 +95,7 @@ class SceneDay extends Scene {
                 left: "10%",
                 height: "50%",
             },
-            className: "character",
+            className: "character" + className,
         })
     }
 
@@ -112,12 +115,14 @@ class SceneDay extends Scene {
             },
         })
 
-        await Awaits.sleep(2000)
+        await Promise.race([Awaits.sleep(2000), Awaits.ok()])
+        Awaits.cancel()
+
         await Awaits.fade(1000)
 
         text.remove()
 
-        this.#initDOM()
+        await this.#initDOM()
 
         await loadBGM
         await BGM.play()
@@ -135,11 +140,9 @@ class SceneDay extends Scene {
         }))
     }
 
-    #initDOM() {
+    async #initDOM() {
         DOM.setParameter()
         DOM.awakeness.style.width = "100%"
-
-        this.#swapCharacter("assets/classroom.png")
 
         const layer = new Ielement(DOM.container, {
             css: {
@@ -150,6 +153,8 @@ class SceneDay extends Scene {
                 zIndex: "100",
             },
         })
+
+        this.#swapCharacter("assets/classroom.png")
 
         this.#goalElement = document.createElement("span")
         this.#goalElement.id = "goal"
@@ -163,11 +168,17 @@ class SceneDay extends Scene {
             layer.appendChild(element)
         })
 
-        new Itext(DOM.container, "よき タイミングで クリック して いしきを たもて!", {
+        const explain = new Itext(DOM.container, "よき タイミングで クリック して いしきを たもて!", {
             css: {
-                top: "20vh",
+                top: "4vh",
             },
+            voice: "assets/sounds/select.wav",
         })
+
+        await Promise.race([explain.ready, Awaits.ok()])
+        Awaits.cancel()
+        explain.finish()
+        await Awaits.sleep(500)
     }
 
     async #study() {
@@ -192,6 +203,8 @@ class SceneDay extends Scene {
         BGM.fadeOut(1)
         this.#mode = "game-over"
         await Awaits.sleep(1000)
+
+        this.#swapCharacter("assets/sleep.png")
 
         const text = new Itext(DOM.container, "いねむり して しまった......", {
             css: {

@@ -24,8 +24,6 @@ class Ielement extends HTMLElement {
 
         if (options.className) this.className += " " + options.className
 
-        if (!container) console.log("Ielement created", this, container)
-
         container.appendChild(this)
     }
 

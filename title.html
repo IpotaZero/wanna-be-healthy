@@ -1,0 +1,118 @@
+<div class="page" id="normal">
+    <p>けんこうになりたい!</p>
+
+    <div class="buttons">
+        <div>
+            <img src="assets/pill.png" />
+            <span class="label"> あらすじ </span>
+        </div>
+
+        <div>
+            <img src="assets/chara.png" />
+            <span class="label"> はじめる </span>
+        </div>
+
+        <div>
+            <img src="assets/pill.png" />
+            <span class="label"> くれじっと </span>
+        </div>
+    </div>
+
+    <div class="text">
+        <i-typing class="arasuji hidden">
+            やみの じだいは おわり、 これからは けんこうの じだい。<br />
+            ははおやから くすねた みんざいが 1こだけ あるから、<br />
+            これを うまく つかって けんこうに いきよう。
+        </i-typing>
+
+        <i-typing class="credit hidden">
+            きかく: いぽた、 まいまい<br />
+            せいさく: MCR <br />
+            <a href="https://x.com/ocu_mcr" target="_blank"> https://x.com/ocu_mcr </a>
+        </i-typing>
+    </div>
+</div>
+
+<style>
+    #normal {
+        padding: 8vh 0;
+
+        height: 100%;
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 8vh;
+
+        & p {
+            text-align: center;
+            font-size: 16vh;
+            filter: drop-shadow(0 0 0.5vh #000);
+        }
+
+        & .buttons {
+            display: flex;
+
+            justify-content: space-evenly;
+
+            height: 100%;
+
+            div {
+                position: relative;
+
+                display: flex;
+                justify-content: center;
+            }
+
+            .label {
+                pointer-events: none;
+                display: none;
+
+                position: absolute;
+
+                margin: auto;
+
+                padding: 1vh;
+                background-color: whitesmoke;
+                border: 1vh #111 solid;
+            }
+
+            & img {
+                height: 110%;
+                cursor: pointer;
+
+                filter: drop-shadow(0 0 0.5vh #000);
+
+                &:hover {
+                    opacity: 0.5;
+
+                    & + .label {
+                        display: flex;
+                    }
+                }
+            }
+        }
+
+        & .text {
+            position: relative;
+            display: flex;
+            justify-content: center;
+
+            & i-typing {
+                top: -12vh;
+                position: absolute;
+
+                padding: 1vh;
+                background-color: whitesmoke;
+                border: 1vh #111 solid;
+
+                height: 4em;
+            }
+        }
+
+        & .hidden {
+            display: none;
+        }
+    }
+</style>

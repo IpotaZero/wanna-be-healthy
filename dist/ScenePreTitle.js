@@ -5,14 +5,11 @@ class ScenePreTitle extends Scene {
         this.#start();
     }
     async #start() {
-        const text = new Itext(DOM.container, "Presented by MCR" + "\u200B".repeat(10) + "<br><br>Please Click...", {
-            css: {
-                height: "3em",
-                textAlign: "center",
-            },
-        });
+        const html = await (await fetch("pretitle.html")).text();
+        page(DOM.container, "pretitle", html);
+        const text = document.querySelector("i-typing");
         text.ready.then(() => {
-            text.querySelector(".i-text-wrapper")?.classList.add("blink-triangle");
+            text.querySelector(".typing-wrapper")?.classList.add("blink-triangle");
         });
         await Awaits.ok();
         const click = new Audio("assets/sounds/クリック.mp3");

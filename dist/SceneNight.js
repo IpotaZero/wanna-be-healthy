@@ -88,7 +88,7 @@ class SceneNight extends Scene {
                     await Awaits.sleep(2000);
                     await Awaits.fade(1000);
                     black.remove();
-                    DOM.container.style.transform = "rotate(3deg)";
+                    DOM.container.style.transform = "rotate(2deg)";
                     currentScene = new SceneDay();
                 }
                 return;
@@ -110,8 +110,9 @@ class SceneNight extends Scene {
             button1.remove();
             new Itext(DOM.container, "しげきを さけて ねむりに つけ!", {
                 css: {
-                    top: "8vh",
+                    top: "4vh",
                 },
+                voice: "assets/sounds/select.wav",
             });
             this.#mode = "stg";
         };
@@ -122,7 +123,8 @@ class SceneNight extends Scene {
                 fontSize: "16vh",
             },
         });
-        await Awaits.sleep(1000);
+        await Promise.race([Awaits.sleep(2000), Awaits.ok()]);
+        Awaits.cancel();
         await Awaits.fade(1000);
         text.remove();
         this.#initDOM(slept);

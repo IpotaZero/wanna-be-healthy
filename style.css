@@ -43,11 +43,14 @@ body {
     justify-content: center;
 
     height: 100%;
-    aspect-ratio: 16/9;
+    width: 100%;
+    /* aspect-ratio: 16/9; */
+
+    overflow: hidden;
 }
 
 #parameter {
-    right: 12vh;
+    left: 0;
     top: 4vh;
 
     position: absolute;
@@ -187,5 +190,32 @@ body {
     50% {
         transform: translate(50%, 25%) scale(1.1);
         box-shadow: 0 0 2vh crimson;
+    }
+}
+
+.character-appear {
+    animation: character-appear 0.1s ease-in-out;
+}
+
+@keyframes character-appear {
+    0% {
+        scale: 0.95;
+    }
+    100% {
+        scale: 1;
+    }
+}
+
+#error {
+    display: none;
+}
+
+@media (orientation: portrait) {
+    #container {
+        display: none;
+    }
+
+    #error {
+        display: flex;
     }
 }
