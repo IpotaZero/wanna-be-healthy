@@ -1,57 +1,51 @@
 "use strict";
 class Typing extends HTMLElement {
-    #interval;
-    #originalHTML;
+    #intervalId;
     #wrapper = document.createElement("div");
     #voice = null;
+    #speed = null;
     #frame = 0;
+    #currentStyle;
+    #resolve;
     isEnd = false;
     ready;
-    #currentStyle = getComputedStyle(this);
-    #resolve;
     constructor(html, speed, voice) {
         super();
-        if (this.dataset["voice"]) {
-            const audio = new Audio(this.dataset["voice"]);
+        this.#currentStyle = getComputedStyle(this);
+        this.#initVoice(voice);
+        this.#speed = speed ?? null;
+        const text = html ?? this.innerHTML;
+        this.innerHTML = "";
+        this.#setupText(text);
+        this.#wrapper.className = "typing-wrapper";
+        this.appendChild(this.#wrapper);
+        this.ready = new Promise((resolve) => (this.#resolve = resolve));
+        this.#startInterval();
+    }
+    #initVoice(voice) {
+        const voiceSrc = this.dataset["voice"];
+        if (voiceSrc) {
+            const audio = new Audio(voiceSrc);
             audio.volume = 0.5;
             this.#voice = audio;
         }
         else if (voice) {
             this.#voice = voice;
         }
-        const text = html ?? this.innerHTML;
-        this.innerHTML = "";
-        this.#wrapper.className = "typing-wrapper";
-        this.appendChild(this.#wrapper);
-        this.#setupText(text);
-        this.ready = new Promise((resolve) => {
-            this.#resolve = resolve;
-        });
-        const s = speed ?? (this.dataset["speed"] ? parseFloat(this.dataset["speed"]) : 24);
-        // アニメーション開始
-        this.#interval = setInterval(() => {
-            this.#updateText();
-        }, 1000 / s);
     }
     #validationText(text) {
         return text.replace(/\s{2,}/g, " ").replace(/\n/g, "");
     }
     #setupText(text) {
-        this.#originalHTML = this.#validationText(text);
-        this.#wrapper.innerHTML = this.#originalHTML;
+        this.#wrapper.innerHTML = this.#validationText(text);
         this.#processTextNodes(this.#wrapper);
     }
-    // テキストノードを再帰的に処理
     #processTextNodes(element) {
-        const childNodes = [...element.childNodes];
-        childNodes.forEach((node) => {
-            if (node.nodeType === Node.TEXT_NODE) {
-                const text = node.textContent;
-                if (text) {
-                    element.replaceChild(new Typing.Char(text), node);
-                }
+        Array.from(element.childNodes).forEach((node) => {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+                element.replaceChild(new Typing.Char(node.textContent), node);
             }
-            else if (node.tagName === "RUBY") {
+            else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === "RUBY") {
                 const temp = document.createElement("span");
                 temp.innerHTML = node.innerHTML;
                 const rt = temp.querySelector("rt");
@@ -61,68 +55,57 @@ class Typing extends HTMLElement {
                 element.replaceChild(new Typing.Ruby(text, ruby), node);
             }
             else if (node.nodeType === Node.ELEMENT_NODE) {
-                // 要素ノードの場合は、その子要素も処理
                 this.#processTextNodes(node);
             }
         });
     }
     #emitVoice() {
-        // ボイス再生
-        if (this.#currentStyle.display !== "none" && +this.#currentStyle.opacity > 0.5) {
-            if (this.#voice && this.#frame++ % 2 == 0) {
-                if (this.#voice instanceof Audio) {
-                    this.#voice.currentTime = 0;
-                }
-                this.#voice.play();
-            }
+        if (this.#currentStyle.display !== "none" &&
+            +this.#currentStyle.opacity > 0.5 &&
+            this.#voice &&
+            this.#frame++ % 2 === 0) {
+            if (this.#voice instanceof Audio)
+                this.#voice.currentTime = 0;
+            this.#voice.play();
         }
     }
     #updateText() {
         this.#emitVoice();
-        const spans = [...this.#wrapper.querySelectorAll(".typing-component")].filter((char) => !char.isEnd);
-        if (spans.length === 0) {
+        const chars = Array.from(this.#wrapper.querySelectorAll(".typing-component"));
+        const nextChar = chars.find((char) => !char.isEnd);
+        if (!nextChar) {
             this.finish();
             return;
         }
-        const mainSpan = spans[0];
-        mainSpan && mainSpan.update();
+        nextChar.update();
     }
-    // アニメーションを即座に完了
+    #startInterval() {
+        const speed = this.#speed ?? (this.dataset["speed"] ? parseFloat(this.dataset["speed"]) : 24);
+        this.#intervalId = window.setInterval(() => this.#updateText(), 1000 / speed);
+    }
     finish() {
-        clearInterval(this.#interval);
-        // this.#wrapper.innerHTML = this.#originalHTML
+        if (this.#intervalId)
+            clearInterval(this.#intervalId);
         this.isEnd = true;
-        this.#resolve();
-        const chars = [...this.#wrapper.querySelectorAll(".typing-component")];
-        chars.forEach((char) => {
-            if (char instanceof Typing.Char) {
-                char.finish();
-            }
-            else if (char instanceof Typing.Ruby) {
-                char.finish();
-            }
-        });
+        this.#resolve?.();
+        const chars = Array.from(this.#wrapper.querySelectorAll(".typing-component"));
+        chars.forEach((char) => char.finish());
     }
     remove() {
         super.remove();
-        clearInterval(this.#interval);
-        this.#resolve();
+        if (this.#intervalId)
+            clearInterval(this.#intervalId);
+        this.#resolve?.();
         this.isEnd = true;
     }
     restart() {
-        // this.#wrapper.innerHTML = this.#originalHTML
-        // this.#processTextNodes(this.#wrapper)
-        this.ready = new Promise((resolve) => {
-            this.#resolve = resolve;
-        });
-        const chars = [...this.#wrapper.querySelectorAll(".typing-component")];
+        this.ready = new Promise((resolve) => (this.#resolve = resolve));
+        const chars = Array.from(this.#wrapper.querySelectorAll(".typing-component"));
         chars.forEach((char) => char.restart());
+        if (this.#intervalId)
+            clearInterval(this.#intervalId);
+        this.#startInterval();
         this.isEnd = false;
-        clearInterval(this.#interval);
-        const speed = this.dataset["speed"] ? parseFloat(this.dataset["speed"]) : 24;
-        this.#interval = setInterval(() => {
-            this.#updateText();
-        }, 1000 / speed);
     }
 }
 customElements.define("i-typing", Typing);
@@ -139,7 +122,7 @@ customElements.define("i-typing", Typing);
         update() {
             this.innerText = this.#text.slice(0, this.#i);
             this.#i++;
-            this.isEnd = this.#text.length === this.#i - 1;
+            this.isEnd = this.#i - 1 === this.#text.length;
         }
         restart() {
             this.#i = 0;
@@ -152,7 +135,7 @@ customElements.define("i-typing", Typing);
         }
     }
     Typing.Char = Char;
-    customElements.define("i-char", Char);
+    customElements.define("typing-char", Char);
     class Ruby extends HTMLElement {
         isEnd = false;
         #text;
@@ -167,9 +150,7 @@ customElements.define("i-typing", Typing);
         update() {
             this.innerHTML = `<ruby>${this.#text.slice(0, this.#i)}<rt>${this.#ruby.slice(0, this.#i)}</rt></ruby>`;
             this.#i++;
-            if (Math.max(this.#text.length, this.#ruby.length) === this.#i - 1) {
-                this.isEnd = true;
-            }
+            this.isEnd = this.#i - 1 === Math.max(this.#text.length, this.#ruby.length);
         }
         restart() {
             this.#i = 0;
@@ -182,5 +163,5 @@ customElements.define("i-typing", Typing);
         }
     }
     Typing.Ruby = Ruby;
-    customElements.define("i-ruby", Ruby);
+    customElements.define("typing-ruby", Ruby);
 })(Typing || (Typing = {}));
