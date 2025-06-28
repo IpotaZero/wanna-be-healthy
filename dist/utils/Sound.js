@@ -1,46 +1,22 @@
 "use strict";
 class Sound {
     static context;
-    /**
-     * SE全体のボリューム
-     */
     static gain;
-    static convolver;
-    /**
-     * それぞれのSEのボリューム
-     */
+    static initialized = false;
     gain;
     audioBuffer;
     reversedBuffer;
     isReversed = false;
-    lastPlayTime = Date.now();
+    lastPlayTime = 0;
     isReady;
-    static initialized = false;
     static init() {
-        if (this.initialized) {
-            throw new Error("Sound is already initialized! Ensure that you are not calling Sound.init() multiple times.");
-        }
+        if (this.initialized)
+            throw new Error("Sound is already initialized!");
         this.initialized = true;
         this.context = new AudioContext();
         this.gain = this.context.createGain();
         this.gain.connect(this.context.destination);
-        this.convolver = this.context.createConvolver();
-        this.convolver.buffer = this.createReverbImpulse();
     }
-    static createReverbImpulse() {
-        const impulse = this.context.createBuffer(2, this.context.sampleRate * 3, this.context.sampleRate);
-        for (let channel = 0; channel < impulse.numberOfChannels; channel++) {
-            const impulseData = impulse.getChannelData(channel);
-            for (let i = 0; i < impulseData.length; i++) {
-                impulseData[i] = (1 - i / impulseData.length) * (Math.random() * 2 - 1);
-            }
-        }
-        return impulse;
-    }
-    /**
-     * SE全体のボリュームを設定
-     * @param volume
-     */
     static setWholeVolume(volume) {
         Sound.checkInit();
         this.gain.gain.value = volume;
@@ -50,37 +26,40 @@ class Sound {
         this.gain = Sound.context.createGain();
         this.gain.connect(Sound.gain);
         this.gain.gain.value = volume;
-        // Sound.convolver.disconnect()
-        // Sound.convolver.connect(this.gain)
+        // プリロードしておく
         this.isReady = this.fetch(src);
     }
-    play() {
-        // 連打はNG
-        if (Date.now() - this.lastPlayTime < 10) {
+    async play() {
+        if (Date.now() - this.lastPlayTime < 33)
             return;
-        }
         this.lastPlayTime = Date.now();
-        this.reconnect();
+        // AudioContextがsuspendされていたらresume
+        if (Sound.context.state === "suspended") {
+            await Sound.context.resume();
+        }
+        // プリロード完了まで待つ
+        await this.isReady;
+        const buffer = this.isReversed ? this.reversedBuffer : this.audioBuffer;
+        if (!buffer)
+            return;
+        const source = Sound.context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.gain);
+        source.start();
     }
-    // 再生方向を切り替える
     reverse() {
         this.isReversed = !this.isReversed;
     }
     clearReversal() {
         this.isReversed = false;
     }
-    // 音源を読み込む
     async fetch(src) {
-        Sound.checkInit();
         const arrayBuffer = await (await fetch(src)).arrayBuffer();
         const audioBuffer = await Sound.context.decodeAudioData(arrayBuffer);
         this.audioBuffer = audioBuffer;
-        const reversedBuffer = this.reverseBuffer(this.audioBuffer);
-        this.reversedBuffer = reversedBuffer;
+        this.reversedBuffer = this.reverseBuffer(audioBuffer);
     }
-    // AudioBufferを反転させる（逆再生用）
     reverseBuffer(buffer) {
-        Sound.checkInit();
         const reversedBuffer = Sound.context.createBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
         for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
             const originalData = buffer.getChannelData(channel);
@@ -91,18 +70,8 @@ class Sound {
         }
         return reversedBuffer;
     }
-    // play前の処理
-    reconnect() {
-        Sound.checkInit();
-        const audio = Sound.context.createBufferSource();
-        audio.buffer = this.isReversed ? this.reversedBuffer : this.audioBuffer;
-        audio.connect(this.gain);
-        audio.connect(Sound.convolver);
-        audio.start();
-    }
     static checkInit() {
-        if (!this.context) {
+        if (!this.context)
             throw new Error("Sound is not initialized. Call Sound.init() before using Sound.");
-        }
     }
 }

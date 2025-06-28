@@ -88,7 +88,7 @@ class SceneNight extends Scene {
                     await Awaits.sleep(2000);
                     await Awaits.fade(1000);
                     black.remove();
-                    DOM.container.style.transform = "rotate(2deg)";
+                    DOM.container.style.transform = "rotate(1deg)";
                     currentScene = new SceneDay();
                 }
                 return;
@@ -104,15 +104,17 @@ class SceneNight extends Scene {
             if (clicked)
                 return;
             clicked = true;
+            BGM.setVolume(1);
             await Awaits.fade(1000);
             text.remove();
             button0.remove();
             button1.remove();
+            BGM.play();
             new Itext(DOM.container, "しげきを さけて ねむりに つけ!", {
                 css: {
                     top: "4vh",
                 },
-                voice: "assets/sounds/select.wav",
+                voice: SE.select,
             });
             this.#mode = "stg";
         };
@@ -123,8 +125,10 @@ class SceneNight extends Scene {
                 fontSize: "16vh",
             },
         });
+        const loadBGM = BGM.fetch({ src: "assets/sounds/bullet.mp3", sourceVolume: 0.5 });
         await Promise.race([Awaits.sleep(2000), Awaits.ok()]);
         Awaits.cancel();
+        await loadBGM;
         await Awaits.fade(1000);
         text.remove();
         this.#initDOM(slept);
@@ -139,9 +143,9 @@ class SceneNight extends Scene {
         if (this.#mode === "pause") {
         }
         else if (this.#mode === "stg") {
-            this.#time -= elapsedTime / 200;
+            this.#time -= elapsedTime / 150;
             this.#timeElement.style.width = `${this.#time / 6}%`;
-            this.#awakeness -= elapsedTime / 200;
+            this.#awakeness -= elapsedTime / 150;
             DOM.awakeness.style.width = `${this.#awakeness}%`;
             this.#enemy.update();
             this.player.update(elapsedTime);
@@ -151,6 +155,8 @@ class SceneNight extends Scene {
                 if (isHit) {
                     b.life = 0;
                     this.#awakeness = Math.min(100, this.#awakeness + 10);
+                    SE.damage.play();
+                    this.player.damage = 30;
                 }
                 return b.life > 0;
             });
@@ -194,6 +200,7 @@ class SceneNight extends Scene {
         });
         state.day++;
         await Awaits.ok();
+        BGM.fadeOut(1);
         await Awaits.fade(1000);
         currentScene = new SceneDay();
     }
@@ -214,15 +221,17 @@ class SceneNight extends Scene {
         });
         state.day++;
         await Awaits.ok();
+        BGM.fadeOut(1);
         await Awaits.fade(1000);
         currentScene = new SceneDay();
     }
 }
 class Shooter {
     #image = new Image();
-    #SPEED = 3;
+    #SPEED = 4;
     p = new Vec(360, 360);
     r = 8;
+    damage = 0;
     constructor() {
         this.#image.src = "assets/pill.png";
     }
@@ -254,10 +263,15 @@ class Shooter {
         }
     }
     render(ctx) {
+        if (this.damage > 0) {
+            this.damage--;
+            ctx.globalAlpha = 0.5;
+        }
         ctx.beginPath();
         ctx.fillStyle = "cyan";
         ctx.arc(this.p.x, this.p.y, this.r + 4, 0, Math.PI * 2);
         ctx.fill();
+        ctx.globalAlpha = 1;
         // ctx.drawImage(this.#image, this.p.x - 32, this.p.y - 32, 64, 64)
     }
 }

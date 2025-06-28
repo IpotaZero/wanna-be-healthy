@@ -15,7 +15,7 @@ class Itext extends Ielement {
             css?: NestedCSS
             className?: string
             speed?: number
-            voice?: string
+            voice?: SE
         } = {},
     ) {
         if (!container) {

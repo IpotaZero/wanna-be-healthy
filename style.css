@@ -32,6 +32,8 @@ body {
     align-items: center;
     justify-content: center;
 
+    padding: 4vh 0;
+
     overflow: hidden;
 }
 
@@ -42,16 +44,18 @@ body {
     align-items: center;
     justify-content: center;
 
+    padding: 0 2vh;
+
     height: 100%;
-    width: 100vw;
-    /* aspect-ratio: 16/9; */
+    width: 100%;
+    transition: opacity 0.3s ease;
 
     overflow: hidden;
 }
 
 #parameter {
     left: 0;
-    top: 4vh;
+    top: 0;
 
     position: absolute;
     display: flex;
@@ -59,6 +63,13 @@ body {
     width: fit-content;
 
     gap: 4vh;
+
+    margin-left: 4vh;
+    padding-right: 4vh;
+    padding-bottom: 4vh;
+
+    border-right: 0.4vh solid #111;
+    border-bottom: 0.4vh solid #111;
 
     & .parameter {
         align-self: flex-end;
@@ -99,7 +110,7 @@ body {
 
     bottom: 6vh;
 
-    width: 100vh;
+    width: 60vh;
     height: 4vh;
 }
 
@@ -134,9 +145,22 @@ body {
     transform: translate(50%, 25%);
 }
 
+.measure-line {
+    position: absolute;
+    height: 100%;
+    width: 0.2vh;
+    background-color: #111;
+
+    transform: translate(50%, 0);
+}
+
 #goal {
     border: 0.5vh solid #111;
     transition: border-color 0.3s ease, background-color 0.3s ease;
+
+    &[data-score="normal"] {
+        animation: pulse-normal 0.1s;
+    }
 
     &[data-score="great"] {
         border-color: gold;
@@ -154,6 +178,16 @@ body {
         border-color: crimson;
         background-color: rgba(220, 20, 60, 0.2);
         animation: pulse-bad 0.1s;
+    }
+}
+
+@keyframes pulse-normal {
+    0%,
+    100% {
+        transform: translate(50%, 25%) scale(1);
+    }
+    50% {
+        transform: translate(50%, 25%) scale(1.1);
     }
 }
 
@@ -207,15 +241,20 @@ body {
 }
 
 #error {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    display: flex;
+    position: absolute;
 }
 
 @media (orientation: portrait) {
     #container {
-        display: none;
+        opacity: 0;
+        pointer-events: none;
     }
 
     #error {
-        display: flex;
+        opacity: 1;
     }
 }

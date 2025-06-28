@@ -4,10 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
     Input.init()
     BGM.init()
     // currentScene = new SceneTitle()
-    currentScene = new SceneDay()
+    // currentScene = new SceneDay()
     // currentScene = new SceneNight(true)
     // currentScene = new SceneEnding()
-    // currentScene = new ScenePreTitle()
+    currentScene = new ScenePreTitle()
     requestAnimationFrame(mainLoop)
 })
 
@@ -42,11 +42,14 @@ class DOM {
 Sound.init()
 
 const SE = {
-    great: new Sound({
-        src: "assets/sounds/鈴を鳴らす.mp3",
-    }),
+    great: new Sound({ src: "assets/sounds/鈴を鳴らす.wav" }),
     select: new Sound({
         src: "assets/sounds/select.wav",
+        volume: 0.3,
+    }),
+    damage: new Sound({
+        src: "assets/sounds/damage.mp3",
+        volume: 0.5,
     }),
 }
 

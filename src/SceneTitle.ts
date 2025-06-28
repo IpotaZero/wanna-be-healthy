@@ -12,9 +12,9 @@ class SceneTitle extends Scene {
 
         let clicked = false
 
-        const [img2, img, img3] = document.querySelectorAll("img")
+        const [button0, button1, button2] = document.querySelectorAll(".hantei") as NodeListOf<HTMLElement>
 
-        img.onclick = async () => {
+        button1.onclick = async () => {
             if (clicked) return
             clicked = true
 
@@ -23,17 +23,24 @@ class SceneTitle extends Scene {
             currentScene = new SceneDay()
         }
 
-        img2.onclick = () => {
+        button0.onclick = () => {
             ;(document.querySelector(".arasuji") as Typing).restart()
             document.querySelector(".arasuji")?.classList.remove("hidden")
             document.querySelector(".credit")?.classList.add("hidden")
         }
 
-        img3.onclick = () => {
+        button2.onclick = () => {
             ;(document.querySelector(".credit") as Typing).restart()
             document.querySelector(".credit")?.classList.remove("hidden")
             document.querySelector(".arasuji")?.classList.add("hidden")
         }
+
+        document.querySelectorAll("i-typing").forEach((elm) => {
+            const text = elm as Typing
+            text.onclick = () => {
+                text.classList.add("hidden")
+            }
+        })
 
         this.#fade()
     }
@@ -60,6 +67,12 @@ class SceneTitle extends Scene {
 
         fade.onclick = () => {
             fade.remove()
+        }
+    }
+
+    loop() {
+        if (keyboard.pressed.has("Enter") || keyboard.pressed.has("Space")) {
+            SE.great.play()
         }
     }
 }

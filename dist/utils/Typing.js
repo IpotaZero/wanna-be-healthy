@@ -7,11 +7,17 @@ class Typing extends HTMLElement {
     #frame = 0;
     isEnd = false;
     ready;
+    #currentStyle = getComputedStyle(this);
     #resolve;
     constructor(html, speed, voice) {
         super();
         if (this.dataset["voice"]) {
-            this.#voice = new Audio(voice ?? this.dataset["voice"]);
+            const audio = new Audio(this.dataset["voice"]);
+            audio.volume = 0.5;
+            this.#voice = audio;
+        }
+        else if (voice) {
+            this.#voice = voice;
         }
         const text = html ?? this.innerHTML;
         this.innerHTML = "";
@@ -60,9 +66,19 @@ class Typing extends HTMLElement {
             }
         });
     }
-    #updateText() {
+    #emitVoice() {
         // ボイス再生
-        this.#voice && this.#frame++ % 2 == 0 && this.#voice.play();
+        if (this.#currentStyle.display !== "none" && +this.#currentStyle.opacity > 0.5) {
+            if (this.#voice && this.#frame++ % 2 == 0) {
+                if (this.#voice instanceof Audio) {
+                    this.#voice.currentTime = 0;
+                }
+                this.#voice.play();
+            }
+        }
+    }
+    #updateText() {
+        this.#emitVoice();
         const spans = [...this.#wrapper.querySelectorAll(".typing-component")].filter((char) => !char.isEnd);
         if (spans.length === 0) {
             this.finish();

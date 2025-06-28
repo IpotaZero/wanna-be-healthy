@@ -9,13 +9,20 @@ class Typing extends HTMLElement {
     isEnd = false
     ready!: Promise<void>
 
+    #currentStyle: CSSStyleDeclaration = getComputedStyle(this)
+
     #resolve!: Function
 
-    constructor(html?: string, speed?: number, voice?: string) {
+    constructor(html?: string, speed?: number, voice?: SE) {
         super()
 
         if (this.dataset["voice"]) {
-            this.#voice = new Audio(voice ?? this.dataset["voice"])
+            const audio = new Audio(this.dataset["voice"])
+            audio.volume = 0.5
+
+            this.#voice = audio
+        } else if (voice) {
+            this.#voice = voice
         }
 
         const text = html ?? this.innerHTML
@@ -79,9 +86,21 @@ class Typing extends HTMLElement {
         })
     }
 
-    #updateText() {
+    #emitVoice() {
         // ボイス再生
-        this.#voice && this.#frame++ % 2 == 0 && this.#voice.play()
+        if (this.#currentStyle.display !== "none" && +this.#currentStyle.opacity > 0.5) {
+            if (this.#voice && this.#frame++ % 2 == 0) {
+                if (this.#voice instanceof Audio) {
+                    this.#voice.currentTime = 0
+                }
+
+                this.#voice.play()
+            }
+        }
+    }
+
+    #updateText() {
+        this.#emitVoice()
 
         const spans = (
             [...this.#wrapper.querySelectorAll(".typing-component")] as (Typing.Char | Typing.Ruby)[]

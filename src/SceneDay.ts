@@ -1,18 +1,31 @@
 class SceneDay extends Scene {
     #awakeness = 100
     #mode: "main" | "game-over" = "game-over"
-    #musicData: { element: HTMLElement; time: number }[] = []
-    #startTime = NaN
+    #musicData: { element: HTMLElement; time: number; type: string }[] = []
     #goalElement!: HTMLElement
+
+    #bgm: AudioEngine
 
     constructor() {
         super()
         this.#musicData = this.#createMusicData()
+
+        this.#bgm = new AudioEngine("assets/sounds/stage-0.mp3")
+
         this.#start()
     }
 
     loop(elapsedTime: number): void {
         if (this.#mode !== "main") return
+
+        if (
+            keyboard.pushed.has("Space") ||
+            keyboard.pushed.has("Enter") ||
+            keyboard.pushed.has("KeyZ") ||
+            mouse.clicked.has("left")
+        ) {
+            this.#showScore("normal")
+        }
 
         this.#musicData = this.#musicData.filter(this.#processMusicData.bind(this))
 
@@ -32,12 +45,20 @@ class SceneDay extends Scene {
         DOM.awakeness.style.width = `${this.#awakeness}%`
     }
 
-    #processMusicData({ element, time }: { element: HTMLElement; time: number }, i: number) {
-        const elapsed = performance.now() - this.#startTime
-        const progress = 100 - (elapsed - time * 1000) / 15
+    #processMusicData({ element, time, type }: { element: HTMLElement; time: number; type: string }, i: number) {
+        const elapsed = this.#bgm.getCurrentTime() * 1000
+        const progress = 100 - (elapsed - time) / 15
         element.style.right = `${100 - progress}%`
 
         // i === 0 && console.log(progress)
+
+        if (type === "measure") {
+            if (progress < -5) {
+                element.remove()
+                return false
+            }
+            return true
+        }
 
         if (this.#isNoteHit(progress)) {
             element.remove()
@@ -93,9 +114,10 @@ class SceneDay extends Scene {
         new Iimage(DOM.container, imagePath, {
             css: {
                 position: "absolute",
-                top: "30%",
-                left: "10%",
-                height: "50%",
+                bottom: "28vh",
+                right: "65%",
+                height: "60%",
+                transform: "translateY(50%)",
             },
             className: "character" + className,
         })
@@ -109,8 +131,6 @@ class SceneDay extends Scene {
     }
 
     async #start() {
-        const loadBGM = BGM.fetch({ src: "assets/sounds/stage-0.mp3", loop: false })
-
         const text = new Itext(DOM.container, "ひる", {
             css: {
                 fontSize: "16vh",
@@ -126,20 +146,32 @@ class SceneDay extends Scene {
 
         await this.#initDOM()
 
-        await loadBGM
-        await BGM.play()
-
-        this.#startTime = performance.now()
+        await this.#bgm.ready
+        await this.#bgm.play()
 
         this.#mode = "main"
     }
 
     #createMusicData() {
         const { bpm, notes } = musicDataList[0]
-        return notes.map((tick) => ({
-            time: (tick / 480) * (60 / bpm) - 1.2755,
-            element: document.createElement("span"),
+
+        const msPerTick = (1 / 480) * (60 / bpm) * 1000
+        // 1 tick = (1 / 480) * (60 / bpm) * 1000 ミリ秒
+
+        const magic = 1275.5
+
+        const musicData = notes.map((tick) => ({
+            // 押すべき絶対時間(ミリ秒)
+            time: tick * msPerTick - magic,
+            element: (() => {
+                const note = document.createElement("span")
+                note.className = "note"
+                return note
+            })(),
+            type: "note" as const,
         }))
+
+        return [...musicData].sort((a, b) => a.time - b.time)
     }
 
     async #initDOM() {
@@ -150,7 +182,8 @@ class SceneDay extends Scene {
             css: {
                 position: "absolute",
                 right: "0",
-                width: "75%",
+                bottom: "24vh",
+                width: "65%",
                 height: "24vh",
                 zIndex: "100",
             },
@@ -165,7 +198,6 @@ class SceneDay extends Scene {
         layer.appendChild(this.#goalElement)
 
         this.#musicData.forEach(({ element }) => {
-            element.className = "note"
             element.style.right = "-200%"
             layer.appendChild(element)
         })
@@ -174,12 +206,11 @@ class SceneDay extends Scene {
             css: {
                 top: "4vh",
             },
-            voice: "assets/sounds/select.wav",
+            voice: SE.select,
         })
 
-        await Promise.race([explain.ready, Awaits.ok()])
-        Awaits.cancel()
-        explain.finish()
+        await explain.ready
+
         await Awaits.sleep(500)
     }
 
@@ -202,7 +233,7 @@ class SceneDay extends Scene {
     }
 
     async #sleep() {
-        BGM.fadeOut(1)
+        this.#bgm.fadeOut()
         this.#mode = "game-over"
         await Awaits.sleep(1000)
 
