@@ -1,71 +1,10 @@
-let currentScene: Scene
+import { Scenes } from "./Scenes/Scenes"
+import { Typing } from "./utils/Typing"
 
-document.addEventListener("DOMContentLoaded", () => {
-    Input.init()
-    BGM.init()
-    // currentScene = new SceneTitle()
-    // currentScene = new SceneDay()
-    // currentScene = new SceneNight(true)
-    // currentScene = new SceneEnding()
-    currentScene = new ScenePreTitle()
-    requestAnimationFrame(mainLoop)
+Typing
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const { SceneTitle } = await import("./Scenes/SceneTitle.js")
+
+    Scenes.init(new SceneTitle())
 })
-
-class DOM {
-    static readonly container = document.getElementById("container") as HTMLElement
-    static dark: HTMLElement
-    static awakeness: HTMLElement
-
-    static setParameter() {
-        this.container.innerHTML += `
-            <div id="parameter">
-                <div class="parameter">
-                    <span class="label"> やみ゜: </span>
-                    <span class="value-box">
-                        <span class="value" style="width: 0"></span>
-                    </span>
-                </div>
-                <div class="parameter">
-                    <span class="label"> かくせい゜: </span>
-                    <span class="value-box">
-                        <span class="value"></span>
-                    </span>
-                </div>
-            </div>
-        `
-
-        this.dark = document.querySelectorAll("#parameter .parameter .value-box .value")[0] as HTMLElement
-        this.awakeness = document.querySelectorAll("#parameter .parameter .value-box .value")[1] as HTMLElement
-    }
-}
-
-Sound.init()
-
-const SE = {
-    great: new Sound({ src: "assets/sounds/鈴を鳴らす.wav" }),
-    select: new Sound({
-        src: "assets/sounds/select.wav",
-        volume: 0.3,
-    }),
-    damage: new Sound({
-        src: "assets/sounds/damage.mp3",
-        volume: 0.5,
-    }),
-}
-
-const state = {
-    dark: [] as number[],
-    usedSleepingMedicine: true,
-    OD: false,
-    day: 0,
-    wannaMedicine: 0,
-}
-
-let lastUpdateTime = performance.now()
-function mainLoop(currentTime: number) {
-    const elapsedTime = currentTime - lastUpdateTime
-    currentScene.loop(elapsedTime)
-
-    lastUpdateTime = currentTime
-    requestAnimationFrame(mainLoop)
-}

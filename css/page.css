@@ -1,0 +1,17 @@
+.hidden {
+    display: none;
+}
+
+button {
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+
+    &.selected {
+        scale: 0.95;
+
+        &::before {
+            /* content: "▶"; */
+        }
+    }
+}
