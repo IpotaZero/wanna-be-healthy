@@ -1,6 +1,7 @@
 import { KeyDriver } from "../utils/KeyDriver.js"
 import { Pages } from "../utils/Pages.js"
 import { Scene } from "./Scene.js"
+import { Scenes } from "./Scenes.js"
 
 export class SceneTitle extends Scene {
     ready: Promise<void>
@@ -24,6 +25,15 @@ export class SceneTitle extends Scene {
         })
 
         this.#keyDriver = new KeyDriver("horizontal")
+
+        this.#setupButtons()
+    }
+
+    #setupButtons() {
+        document.querySelector<HTMLElement>("#game")!.onclick = async () => {
+            const { SceneNight } = await import("./SceneNight.js")
+            Scenes.goto(() => new SceneNight())
+        }
     }
 
     end(): void {

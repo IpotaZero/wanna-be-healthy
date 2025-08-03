@@ -1,7 +1,10 @@
 export class Typing extends HTMLElement {
     #interval: number
 
+    #i = 0
     #text
+
+    onEnd = () => {}
 
     constructor() {
         super()
@@ -13,9 +16,10 @@ export class Typing extends HTMLElement {
     }
 
     #update() {
-        this.innerText += this.#text[this.innerText.length] ?? ""
+        this.innerText += this.#text[this.#i++] ?? ""
 
-        if (this.innerText.length >= this.#text.length) {
+        if (this.#i >= this.#text.length) {
+            this.onEnd()
             clearInterval(this.#interval)
         }
     }

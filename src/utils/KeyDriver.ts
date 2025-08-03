@@ -1,25 +1,23 @@
 export class KeyDriver {
+    readonly #signal = new AbortController()
     #index = 0
     #buttons: HTMLButtonElement[] = []
-    #signal = new AbortController()
 
     direction: "horizontal" | "vertical"
 
     constructor(direction: "horizontal" | "vertical") {
         this.direction = direction
         this.update()
+
+        window.addEventListener("keydown", this.#handler.bind(this), { signal: this.#signal.signal })
     }
 
     update() {
-        this.#signal.abort()
-
         this.#buttons = [...document.querySelectorAll("button")].filter((b) => this.#isElementVisible(b))
 
         const selectedIndex = this.#buttons.findIndex((b) => b.classList.contains("selected"))
         this.#index = Math.max(selectedIndex, 0)
 
-        this.#signal = new AbortController()
-        window.addEventListener("keydown", this.#handler.bind(this), { signal: this.#signal.signal })
         this.#setupHover()
         this.#updateButtonClass()
     }
