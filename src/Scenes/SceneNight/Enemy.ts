@@ -12,7 +12,6 @@ export abstract class Enemy extends Actor {
 
     static async loadTexture() {}
 
-    gs: Generator[] = []
     deltaScaler: number = 1
 
     frame = 0
@@ -49,11 +48,9 @@ export abstract class Enemy extends Actor {
     }
 
     update(deltaScaler: number) {
-        this.deltaScaler = deltaScaler
+        super.update(deltaScaler)
 
-        const done: (boolean | undefined)[] = []
-        this.gs.forEach((g) => done.push(g.next().done))
-        this.gs = this.gs.filter((_, i) => !done[i])
+        this.deltaScaler = deltaScaler
 
         this.frame++
     }

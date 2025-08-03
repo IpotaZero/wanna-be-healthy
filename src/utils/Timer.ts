@@ -6,6 +6,10 @@ export class Timer {
         this.length = length
     }
 
+    progress() {
+        return this.timer / this.length
+    }
+
     update() {
         if (this.timer > 0) {
             this.timer--

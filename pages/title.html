@@ -1,21 +1,36 @@
 <div class="page" id="normal">
     <i-typing id="title">けんこうになりたい!</i-typing>
     <div id="buttons">
-        <button>
+        <button data-link="#arasuji">
             <img src="./assets/pill.png" alt="" />
         </button>
         <button id="game">
             <img src="./assets/chara.png" alt="" />
         </button>
-        <button>
+        <button data-link="#credit">
             <img src="./assets/pill.png" alt="" />
         </button>
     </div>
 </div>
 
+<div class="page" id="arasuji">
+    <button data-back="1">おk</button>
+    <p>
+        やみの じだいは おわり これからは けんこうの じだい。<br />
+        ははおやから くすねた みんざいが 1こだけ あるから これを うまく つかって いきのびよう。
+    </p>
+</div>
+
+<div class="page" id="credit">
+    <button data-back="1">もどる</button>
+    <p>
+        きかく: いぽた <br />
+        せいさく: <a href="https://x.com/ocu_mcr" target="_blank">MCR</a>
+    </p>
+</div>
+
 <style>
     #normal {
-        display: flex;
         flex-direction: column;
         align-items: center;
     }
@@ -30,5 +45,29 @@
 
     img {
         height: 64vh;
+    }
+
+    #arasuji {
+        padding: 12dvh;
+
+        & button {
+            position: absolute;
+            left: 6dvh;
+            top: 6dvh;
+
+            padding: 2dvh;
+        }
+    }
+
+    #credit {
+        padding: 12dvh;
+
+        & button {
+            position: absolute;
+            left: 6dvh;
+            top: 6dvh;
+
+            padding: 2dvh;
+        }
     }
 </style>

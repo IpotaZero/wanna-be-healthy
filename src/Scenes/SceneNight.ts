@@ -1,6 +1,5 @@
 import * as PIXI from "pixi.js"
 
-import { Input } from "../utils/Input.js"
 import { Pages } from "../utils/Pages.js"
 import { Scene } from "./Scene.js"
 import { Player } from "./SceneNight/Player.js"
@@ -10,15 +9,21 @@ import { Enemy0 } from "./SceneNight/Stages.js"
 import { Timer } from "../utils/Timer.js"
 import { Scenes } from "./Scenes.js"
 import { Typing } from "../utils/Typing.js"
+import { Awaits } from "../utils/Awaits.js"
+import { Danmaku } from "./SceneNight/Danmaku.js"
+import { SE } from "../SE.js"
+import { OK } from "../utils/ok.js"
 
 export class SceneNight extends Scene {
     readonly ready: Promise<void>
+
     readonly #rotatingLine = new PIXI.Graphics()
-
-    readonly #grazeCoolTimer = new Timer(30)
-    readonly #dawnTimer = new Timer(1440)
-
     #lineProgress: number = 0
+
+    readonly #dawnLine = new PIXI.Graphics()
+    readonly #dawnTimer = new Timer(1280)
+
+    readonly #danmaku = new Danmaku()
 
     constructor() {
         super()
@@ -28,36 +33,31 @@ export class SceneNight extends Scene {
 
         this.#dawnTimer.action()
 
+        this.#danmaku.onDamage = () => {
+            this.#lineProgress = Math.max(this.#lineProgress - 0.1, 0)
+            SE.damage.play()
+        }
+
+        this.#danmaku.onGraze = () => {
+            this.#lineProgress += 0.005
+        }
+
         this.ready = this.#setup()
     }
 
     #update(ticker: PIXI.Ticker) {
         const ds = ticker.deltaMS / (1000 / 60)
-        this.#updateDanmaku(ds)
+        this.#danmaku.update(ds)
 
         this.#updateRotatingLine(ticker.deltaTime)
+        this.#updateDawnLine()
 
         this.#updateGameOver(ticker)
     }
 
-    #updateDanmaku(ds: number) {
-        for (let i = 0; i < Math.round(ds); i++) {
-            G.player.update(1)
-            G.enemies.forEach((e) => e.update(1))
-            G.bullets.forEach((b) => b.update(1))
-            this.#damage()
-        }
-
-        G.bullets.forEach((b) => {
-            if (b.life <= 0) G.app.stage.removeChild(b)
-        })
-        G.bullets = G.bullets.filter((b) => b.life > 0)
-
-        Input.update()
-    }
-
     #updateGameOver(ticker: PIXI.Ticker) {
         this.#dawnTimer.update()
+
         if (this.#dawnTimer.timer === 0) {
             ticker.destroy()
             Scenes.goto(() => new SceneFail())
@@ -69,24 +69,6 @@ export class SceneNight extends Scene {
             Scenes.goto(() => new SceneClear())
             return
         }
-    }
-
-    #damage() {
-        G.bullets.forEach((b) => {
-            if (this.#grazeCoolTimer.timer === 0) {
-                if (b.p.sub(G.player.p).magnitude() * 0.5 > b.r + G.player.r) return
-                this.#lineProgress += 0.01
-                this.#grazeCoolTimer.action()
-            }
-
-            if (b.p.sub(G.player.p).magnitude() * 1.5 > b.r + G.player.r) return
-
-            b.life = 0
-
-            this.#lineProgress = Math.max(this.#lineProgress - 0.1, 0)
-        })
-
-        this.#grazeCoolTimer.update()
     }
 
     #updateRotatingLine(deltaTime: number) {
@@ -122,19 +104,39 @@ export class SceneNight extends Scene {
         this.#rotatingLine.stroke({ width: 3, color: 0xff4444, cap: "square" })
     }
 
+    #updateDawnLine() {
+        this.#dawnLine.clear()
+
+        const progress = this.#dawnTimer.progress()
+
+        this.#dawnLine
+            .moveTo((CH - WIDTH) / 2 + 100, CH - 100)
+            .lineTo((CH - WIDTH) / 2 + WIDTH * progress, CH - 100)
+            .stroke({
+                color: 0xffff80,
+                width: 24,
+            })
+    }
+
     async #setup() {
         await this.#setupPage()
         this.#setupFrame()
-        this.#setupRotatingLine()
+        this.#setupLines()
         this.#setupPlayer()
 
-        await Promise.all([Enemy0.loadTexture()])
+        const loadFont = PIXI.Assets.load({
+            src: "assets/font/marukiya.ttf",
+            data: {
+                family: "dot",
+            },
+        })
+
+        await Promise.all([Enemy0.loadTexture(), loadFont])
 
         G.enemies.push(new Enemy0())
         G.app.stage.addChild(...G.enemies)
 
-        G.app.ticker.maxFPS = 60
-        G.app.ticker.add(this.#update.bind(this))
+        this.#start()
     }
 
     async #setupPage() {
@@ -150,6 +152,7 @@ export class SceneNight extends Scene {
             width: CW,
             height: CH,
             canvas: cvs,
+            resolution: window.devicePixelRatio || 1,
         })
     }
 
@@ -159,8 +162,21 @@ export class SceneNight extends Scene {
         G.app.stage.addChild(gr)
     }
 
-    #setupRotatingLine() {
+    #setupLines() {
         G.app.stage.addChild(this.#rotatingLine)
+        G.app.stage.addChild(this.#dawnLine)
+
+        const text = new PIXI.Text({
+            text: "DAWN",
+            style: {
+                fill: 0xf5f5f5,
+                fontFamily: "dot",
+            },
+            x: (CW - WIDTH) / 2 + 50,
+            y: CH - 100 - 4,
+            anchor: 0.5,
+        })
+        G.app.stage.addChild(text)
     }
 
     #setupPlayer() {
@@ -172,10 +188,39 @@ export class SceneNight extends Scene {
         G.player = new Player(texture)
         G.app.stage.addChild(G.player)
     }
+
+    async #start() {
+        await this.#displayText()
+
+        G.app.ticker.maxFPS = 60
+        G.app.ticker.add(this.#update.bind(this))
+    }
+
+    async #displayText() {
+        const text = new Typing("しげきをさけて ねむりにつけ!", SE.voice)
+        text.style.position = "absolute"
+        text.style.color = "whitesmoke"
+        text.style.backgroundColor = "#000000"
+
+        const container = document.getElementById("container")!
+        container.appendChild(text)
+
+        await Awaits.sleep(1500)
+
+        text.classList.add("fade-out")
+        text.onanimationend = () => {
+            text.remove()
+        }
+    }
 }
 
 class SceneClear extends Scene {
     ready: Promise<void>
+
+    #ok = new OK(async () => {
+        const { SceneDay } = await import("./SceneDay.js")
+        Scenes.goto(() => new SceneDay())
+    })
 
     constructor() {
         super()
@@ -186,12 +231,20 @@ class SceneClear extends Scene {
         const container = document.getElementById("container")!
 
         container.innerHTML += `
-            <i-typing>ねむれた...</i-typing>
+            <i-typing se="assets/sounds/select.wav">ねむれた...</i-typing>
+            <img src="assets/bed.png"/>
 
             <style>
                 i-typing {
                     position: absolute;
                     color: whitesmoke;
+                    top: 20dvh;
+                }
+
+                img {
+                    position: absolute;
+                    width: 25dvh;
+                    height: 25dvh;
                 }
             </style>
         `
@@ -215,7 +268,7 @@ class SceneFail extends Scene {
         const container = document.getElementById("container")!
 
         container.innerHTML += `
-            <i-typing>てつやして しまった...</i-typing>
+            <i-typing se="assets/sounds/select.wav">てつやして しまった...</i-typing>
 
             <style>
                 i-typing {

@@ -26,6 +26,11 @@ class Remodeler<T extends Actor> {
         this.actors = actors.map((b) => b.clone())
     }
 
+    map(f: (actor: T) => T) {
+        this.actors.map(f)
+        return this
+    }
+
     rev(radian: number) {
         this.actors.forEach((b) => {
             b.rotation += radian
@@ -108,7 +113,7 @@ class Remodeler<T extends Actor> {
         return this
     }
 
-    stack(margin: number) {
+    sleep(margin: number) {
         this.margin = margin
         return this
     }

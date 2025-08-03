@@ -8,15 +8,19 @@ export class Player extends Actor {
     readonly r = 12
     readonly speed = 5.5
 
+    gs: Generator[] = []
+
     constructor(texture: PIXI.Texture) {
         super(texture)
         this.x = CW / 2
-        this.y = CH / 2
+        this.y = CH / 4 + 100
         this.setSize(24)
         this.anchor.set(0.5)
     }
 
     update(deltaScaler: number) {
+        super.update(deltaScaler)
+
         const v = vec(0, 0)
 
         if (keyboard.pressed.has("ArrowRight")) {

@@ -2,9 +2,11 @@ import * as PIXI from "pixi.js"
 import { vec, Vec } from "../../utils/Vec"
 
 export abstract class Actor extends PIXI.Sprite {
+    /**当たり判定 */
     r: number = 12
     speed: number = 5
     Gs: ((me: Actor) => Generator)[] = []
+    gs: Generator[] = []
 
     get p() {
         return vec.from(this.position)
@@ -17,13 +19,17 @@ export abstract class Actor extends PIXI.Sprite {
     clone(): typeof this {
         const c = Object.getPrototypeOf(this).constructor
 
-        const bullet = new c(this.texture)
-        bullet.x = this.x
-        bullet.y = this.y
-        bullet.rotation = this.rotation
-        bullet.speed = this.speed
-        bullet.Gs = [...this.Gs]
-        return bullet
+        const actor = new c(this.texture)
+        actor.x = this.x
+        actor.y = this.y
+        actor.rotation = this.rotation
+        actor.speed = this.speed
+        actor.Gs = [...this.Gs]
+
+        actor.width = this.width
+        actor.height = this.height
+
+        return actor
     }
 
     pushGenerator(g: (me: typeof this) => Generator, margin: number = 0) {
@@ -33,5 +39,11 @@ export abstract class Actor extends PIXI.Sprite {
                 yield* g(me)
             }.bind(this),
         )
+    }
+
+    update(deltaScaler: number) {
+        const done: (boolean | undefined)[] = []
+        this.gs.forEach((g) => done.push(g.next().done))
+        this.gs = this.gs.filter((_, i) => !done[i])
     }
 }
