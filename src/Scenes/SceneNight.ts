@@ -8,11 +8,12 @@ import { G } from "./SceneNight/global.js"
 import { Enemy0 } from "./SceneNight/Stages.js"
 import { Timer } from "../utils/Timer.js"
 import { Scenes } from "./Scenes.js"
-import { Typing } from "../utils/Typing.js"
+import { ETyping } from "../utils/ETyping.js"
 import { Awaits } from "../utils/Awaits.js"
 import { Danmaku } from "./SceneNight/Danmaku.js"
 import { SE } from "../SE.js"
 import { OK } from "../utils/ok.js"
+import { BGM } from "../utils/BGM.js"
 
 export class SceneNight extends Scene {
     readonly ready: Promise<void>
@@ -136,6 +137,9 @@ export class SceneNight extends Scene {
         G.enemies.push(new Enemy0())
         G.app.stage.addChild(...G.enemies)
 
+        await BGM.fetch("assets/sounds/bullet.mp3")
+        BGM.play()
+
         this.#start()
     }
 
@@ -197,7 +201,7 @@ export class SceneNight extends Scene {
     }
 
     async #displayText() {
-        const text = new Typing("しげきをさけて ねむりにつけ!", SE.voice)
+        const text = new ETyping("しげきをさけて よあけまでに ねむれ!", SE.voice)
         text.style.position = "absolute"
         text.style.color = "whitesmoke"
         text.style.backgroundColor = "#000000"
@@ -205,7 +209,7 @@ export class SceneNight extends Scene {
         const container = document.getElementById("container")!
         container.appendChild(text)
 
-        await Awaits.sleep(1500)
+        await Awaits.key()
 
         text.classList.add("fade-out")
         text.onanimationend = () => {
@@ -225,6 +229,10 @@ class SceneClear extends Scene {
     constructor() {
         super()
         this.ready = this.#setPage()
+    }
+
+    async end(): Promise<void> {
+        BGM.fadeOut(1000)
     }
 
     async #setPage() {
@@ -249,7 +257,7 @@ class SceneClear extends Scene {
             </style>
         `
 
-        const text = container.querySelector<Typing>("i-typing")!
+        const text = container.querySelector<ETyping>("i-typing")!
         text.onEnd = () => {
             text.classList.add("text-end")
         }
@@ -262,6 +270,10 @@ class SceneFail extends Scene {
     constructor() {
         super()
         this.ready = this.#setPage()
+    }
+
+    async end() {
+        BGM.fadeOut(1000)
     }
 
     async #setPage() {
@@ -278,7 +290,7 @@ class SceneFail extends Scene {
             </style>
         `
 
-        const text = container.querySelector<Typing>("i-typing")!
+        const text = container.querySelector<ETyping>("i-typing")!
         text.onEnd = () => {
             text.classList.add("text-end")
         }

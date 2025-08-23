@@ -31,12 +31,13 @@ export class SceneTitle extends Scene {
 
     #setupButtons() {
         document.querySelector<HTMLElement>("#game")!.onclick = async () => {
-            const { SceneNight } = await import("./SceneNight.js")
-            Scenes.goto(() => new SceneNight())
+            const { SceneDay: Scene } = await import("./SceneDay.js")
+            // const { SceneNight: Scene } = await import("./SceneNight.js")
+            Scenes.goto(() => new Scene())
         }
     }
 
-    end(): void {
+    async end() {
         this.#keyDriver.discard()
     }
 }

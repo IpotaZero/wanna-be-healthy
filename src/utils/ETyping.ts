@@ -1,6 +1,6 @@
 import { Sound } from "../SE"
 
-export class Typing extends HTMLElement {
+export class ETyping extends HTMLElement {
     #interval: number
 
     #i = 0
@@ -26,7 +26,7 @@ export class Typing extends HTMLElement {
     }
 
     #update() {
-        this.innerText += this.#text[this.#i++] ?? ""
+        this.textContent += this.#text[this.#i++] ?? ""
 
         this.#i % 2 === 0 && this.#se?.play()
 
@@ -37,4 +37,4 @@ export class Typing extends HTMLElement {
     }
 }
 
-customElements.define("i-typing", Typing)
+customElements.define("i-typing", ETyping)

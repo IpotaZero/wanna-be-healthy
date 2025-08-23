@@ -13,13 +13,14 @@ export class Scenes {
         {
             showLoading = this.#showLoading,
             hideLoading = this.#hideLoading,
-        }: { showLoading?: () => void; hideLoading?: () => void } = {},
+            msIn = 200,
+            msOut = 200,
+        }: { showLoading?: () => void; hideLoading?: () => void; msIn?: number; msOut?: number } = {},
     ) {
-        this.#currentScene.end()
-
         const container = document.getElementById("container")!
 
-        await Awaits.fadeOut(container)
+        await Awaits.fadeOut(container, msIn)
+        await this.#currentScene.end()
 
         let done = false
         let showed = false
@@ -40,7 +41,7 @@ export class Scenes {
             hideLoading()
         }
 
-        await Awaits.fadeIn(container)
+        await Awaits.fadeIn(container, msOut)
     }
 
     static #showLoading() {

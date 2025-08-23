@@ -3,6 +3,11 @@
     src: url(../assets/font/marukiya.ttf);
 }
 
+@font-face {
+    font-family: mincho;
+    src: url(../assets/font/KH-Dot-Hibiya-32.ttf);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -37,6 +42,10 @@ body {
     justify-content: center;
 
     overflow: hidden;
+
+    background-color: #111;
+
+    /* filter: sepia(0.1); */
 }
 
 #container {
@@ -46,11 +55,14 @@ body {
     align-items: center;
     justify-content: center;
 
+    aspect-ratio: 4/3;
     height: 100%;
-    width: 100%;
+    width: auto;
     transition: opacity 0.3s ease;
 
     overflow: hidden;
+
+    background-color: whitesmoke;
 }
 
 #error {
@@ -69,5 +81,55 @@ body {
 
     #error {
         opacity: 1;
+    }
+}
+
+#texture {
+    position: absolute;
+    height: 100%;
+    aspect-ratio: 4/3;
+
+    background-image: url(../assets/images/braun.webp);
+    background-size: 0.3%;
+    /* mix-blend-mode: multiply; */
+
+    pointer-events: none;
+
+    opacity: 0.04;
+
+    z-index: 1000;
+
+    /* animation: b 0.1s infinite; */
+}
+
+#overlay {
+    position: absolute;
+    height: 100%;
+    aspect-ratio: 4/3;
+
+    background-color: greenyellow;
+    opacity: 0.4;
+    mix-blend-mode: screen;
+
+    pointer-events: none;
+
+    z-index: 1001;
+
+    animation: b 0.1s infinite;
+
+    box-shadow: inset 0px 0px 6dvh 0px rgba(0, 0, 0, 1);
+}
+
+@keyframes b {
+    0% {
+        opacity: 0.38;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+
+    100% {
+        opacity: 0.38;
     }
 }

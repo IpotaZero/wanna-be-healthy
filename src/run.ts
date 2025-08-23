@@ -1,13 +1,15 @@
 import { Scenes } from "./Scenes/Scenes"
+import { BGM } from "./utils/BGM"
 import { Input } from "./utils/Input"
-import { Typing } from "./utils/Typing"
+import { ETyping } from "./utils/ETyping"
 
-Typing
+ETyping
 
 document.addEventListener("DOMContentLoaded", async () => {
+    BGM.init()
     Input.init()
 
-    const { SceneTitle } = await import("./Scenes/SceneTitle.js")
+    const { ScenePretitle } = await import("./Scenes/ScenePretitle.js")
 
-    Scenes.init(new SceneTitle())
+    Scenes.init(new ScenePretitle())
 })

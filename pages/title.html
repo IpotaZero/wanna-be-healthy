@@ -3,28 +3,51 @@
     <div id="buttons">
         <button data-link="#arasuji">
             <img src="./assets/pill.png" alt="" />
+            <span class="label shake">あそびかた</span>
         </button>
+
         <button id="game">
             <img src="./assets/chara.png" alt="" />
+            <span class="label shake">はじめる</span>
         </button>
+
         <button data-link="#credit">
             <img src="./assets/pill.png" alt="" />
+            <span class="label shake">くれじっと</span>
         </button>
     </div>
 </div>
 
 <div class="page" id="arasuji">
+    <section>
+        <h2>あらすじ</h2>
+        <p>
+            やみの じだいは おわり これからは けんこうの じだい。<br />
+            ははおやから くすねた みんざいが 1こだけ あるから これを うまく つかって いきのびよう。
+        </p>
+    </section>
+
+    <section>
+        <h2>あそびかた</h2>
+        <section>
+            <h3>ひるパート</h3>
+            <p>がめんに あらわれた もじを にゅうりょくして ねむけを かせぐ</p>
+            <p>よそくへんかんは きっておいたほうがいい</p>
+        </section>
+        <section>
+            <h3>よるパート</h3>
+            <p>しげきを さけて よあけまでに ねむる</p>
+            <p>やじるしキーでそうさ</p>
+        </section>
+    </section>
+
     <button data-back="1">おk</button>
-    <p>
-        やみの じだいは おわり これからは けんこうの じだい。<br />
-        ははおやから くすねた みんざいが 1こだけ あるから これを うまく つかって いきのびよう。
-    </p>
 </div>
 
 <div class="page" id="credit">
     <button data-back="1">もどる</button>
     <p>
-        きかく: いぽた <br />
+        きかく: いぽた、まいまい <br />
         せいさく: <a href="https://x.com/ocu_mcr" target="_blank">MCR</a>
     </p>
 </div>
@@ -35,20 +58,64 @@
         align-items: center;
     }
 
+    #buttons {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+
+        & button {
+            width: 33%;
+            overflow: hidden;
+            height: fit-content;
+            display: flex;
+            justify-content: center;
+        }
+    }
+
     #title {
         font-size: 12dvh;
     }
 
-    #buttons {
-        display: flex;
+    img {
+        height: 63vh;
     }
 
-    img {
-        height: 64vh;
+    .label {
+        position: absolute;
+        display: none;
+        pointer-events: none;
+        background-color: whitesmoke;
+    }
+
+    button:hover > .label {
+        display: block;
     }
 
     #arasuji {
-        padding: 12dvh;
+        flex-direction: column;
+        padding: 20dvh 14dvh;
+        overflow-y: auto;
+
+        justify-content: flex-start;
+
+        gap: 2em;
+
+        & h2 {
+            padding-bottom: 0.5em;
+            border-bottom: 0.6dvh #111 solid;
+        }
+
+        & h3::after {
+            content: ":";
+        }
+
+        & section {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+
+            gap: 1em;
+        }
 
         & button {
             position: absolute;
@@ -56,6 +123,8 @@
             top: 6dvh;
 
             padding: 2dvh;
+
+            background-color: whitesmoke;
         }
     }
 

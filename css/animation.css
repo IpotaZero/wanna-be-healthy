@@ -30,3 +30,43 @@
         opacity: 0;
     }
 }
+
+.shake {
+    animation: shake 0.5s infinite linear;
+}
+
+@keyframes shake {
+    0% {
+        transform: translate(0, 0);
+    }
+    10% {
+        transform: translate(-0.2dvh, 0.3dvh);
+    }
+    20% {
+        transform: translate(0.3dvh, -0.2dvh);
+    }
+    30% {
+        transform: translate(-0.3dvh, -0.1dvh);
+    }
+    40% {
+        transform: translate(0.1dvh, 0.3dvh);
+    }
+    50% {
+        transform: translate(-0.2dvh, -0.3dvh);
+    }
+    60% {
+        transform: translate(0.3dvh, 0.1dvh);
+    }
+    70% {
+        transform: translate(-0.1dvh, -0.2dvh);
+    }
+    80% {
+        transform: translate(0.2dvh, 0.3dvh);
+    }
+    90% {
+        transform: translate(-0.3dvh, 0.1dvh);
+    }
+    100% {
+        transform: translate(0, 0);
+    }
+}
