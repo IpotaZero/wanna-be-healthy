@@ -15,12 +15,13 @@ export const remodel = <T extends Actor>(actors: T[]): R<T> =>
     }) as R<T>
 
 type R<T extends Actor> = Remodeler<T> & {
-    [k in keyof Actor]: (value: Actor[k]) => R<T>
+    [k in keyof T]: (value: T[k]) => R<T>
 }
 
 class Remodeler<T extends Actor> {
     actors: T[]
     margin: number = 0
+    duration: number = Infinity
 
     constructor(actors: T[]) {
         this.actors = actors.map((b) => b.clone())
@@ -71,6 +72,24 @@ class Remodeler<T extends Actor> {
         return this
     }
 
+    sim(num: number, speed: number) {
+        this.actors = this.actors.flatMap((b) => {
+            const s = b.speed
+
+            const bs: T[] = []
+
+            for (let i = 0; i < num; i++) {
+                const newB = b.clone()
+                newB.speed = s + (speed - s) * (i / num)
+                bs.push(newB)
+            }
+
+            return bs
+        })
+
+        return this
+    }
+
     aim({ x, y }: { x: number; y: number }) {
         this.actors.forEach((b) => {
             const radian = Math.atan2(y - b.p.y, x - b.p.x)
@@ -97,8 +116,10 @@ class Remodeler<T extends Actor> {
     }
 
     f(f: (me: T) => void) {
+        let d = this.duration
+
         return this.g(function* (me) {
-            while (1) {
+            while (d--) {
                 f(me)
                 yield
             }
@@ -114,16 +135,35 @@ class Remodeler<T extends Actor> {
     }
 
     sleep(margin: number) {
-        this.margin = margin
+        this.margin += margin
+        return this
+    }
+
+    for(duration: number) {
+        this.duration = duration
+        this.margin += duration
         return this
     }
 
     accel(speed: number, frame: number, ease = (t: number) => 1 - (1 - t) ** 2) {
+        this.margin += frame
+
         return this.g(function* (me) {
             const s = me.speed
 
             for (let i = 0; i < frame; i++) {
                 me.speed = s + ease((i + 1) / frame) * (speed - s)
+                yield
+            }
+        })
+    }
+
+    spin(force: number) {
+        let d = this.duration
+
+        return this.g(function* (me) {
+            while (d--) {
+                me.rotation += force
                 yield
             }
         })
@@ -136,7 +176,7 @@ class Remodeler<T extends Actor> {
             ;(b as unknown as Bullet).fire()
         })
 
-        G.bullets.push(...this.actors)
+        G.bullets.push(...(this.actors as any))
         G.app.stage.addChild(...this.actors)
     }
 

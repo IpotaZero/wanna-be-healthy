@@ -1,3 +1,5 @@
+<canvas id="c" width="800" height="600"></canvas>
+
 <div class="page" id="normal">
     <i-typing id="title">けんこうになりたい!</i-typing>
     <div id="buttons">
@@ -23,7 +25,7 @@
         <h2>あらすじ</h2>
         <p>
             やみの じだいは おわり これからは けんこうの じだい。<br />
-            ははおやから くすねた みんざいが 1こだけ あるから これを うまく つかって いきのびよう。
+            ははおやから くすねた みんざいが 1こだけ あるから これを うまく つかって 4かかん いきのびよう。
         </p>
     </section>
 
@@ -46,13 +48,21 @@
 
 <div class="page" id="credit">
     <button data-back="1">もどる</button>
+    <p>SE: 効果音ラボ</p>
     <p>
-        きかく: いぽた、まいまい <br />
-        せいさく: <a href="https://x.com/ocu_mcr" target="_blank">MCR</a>
+        企画: いぽた、まいまい <br />
+        制作: <a href="https://x.com/ocu_mcr" target="_blank">MCR</a>
     </p>
 </div>
 
 <style>
+    #c {
+        position: absolute;
+        pointer-events: none;
+        width: 100%;
+        object-fit: contain;
+    }
+
     #normal {
         flex-direction: column;
         align-items: center;
@@ -62,6 +72,8 @@
         display: flex;
         width: 100%;
         justify-content: center;
+
+        z-index: 10;
 
         & button {
             width: 33%;
@@ -85,9 +97,11 @@
         display: none;
         pointer-events: none;
         background-color: whitesmoke;
+
+        top: 10%;
     }
 
-    button:hover > .label {
+    button:focus > .label {
         display: block;
     }
 
@@ -102,7 +116,7 @@
 
         & h2 {
             padding-bottom: 0.5em;
-            border-bottom: 0.6dvh #111 solid;
+            border-bottom: 0.6dvh #111 dashed;
         }
 
         & h3::after {
@@ -129,6 +143,12 @@
     }
 
     #credit {
+        flex-direction: column;
+
+        *:not(button) {
+            font-family: mincho;
+        }
+
         padding: 12dvh;
 
         & button {

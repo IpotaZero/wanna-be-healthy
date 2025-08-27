@@ -1,55 +1,54 @@
 export class BGM {
-    static #context: AudioContext
-    static #gain: GainNode
-    static audio: HTMLAudioElement | null = null
-    static #source: MediaElementAudioSourceNode | null = null
+    static context: AudioContext
+    static gain: GainNode
+    static source: AudioBufferSourceNode | null = null
 
     static #volume = 0.3
-
-    static path: string = ""
 
     static #initialized = false
     static init() {
         if (this.#initialized) throw new Error("すでにinitialized!")
         this.#initialized = true
 
-        this.#context = new AudioContext()
-        this.#gain = this.#context.createGain()
-        this.#gain.connect(this.#context.destination)
+        this.context = new AudioContext()
+        this.gain = this.context.createGain()
+        this.gain.connect(this.context.destination)
     }
 
-    static fetch(path: string, loop = true) {
-        this.audio?.pause()
-        this.#source?.disconnect()
+    static async fetch(
+        path: string,
+        {
+            loopStart,
+            loopEnd,
+            loop,
+            volume,
+        }: { loopStart?: number; loopEnd?: number; loop?: boolean; volume?: number } = {},
+    ) {
+        this.source?.stop()
+        this.source?.disconnect()
+        this.pause()
+        this.#setVolume(this.#volume * (volume ?? 1))
 
-        this.path = path
+        const response = await fetch(path)
+        const arrayBuffer = await response.arrayBuffer()
+        const buffer = await this.context.decodeAudioData(arrayBuffer)
+        this.source = this.context.createBufferSource()
+        this.source.buffer = buffer
 
-        return new Promise<void>((resolve) => {
-            this.audio = new Audio(path)
-            this.audio.loop = loop
+        this.source.loop = loop ?? true
+        this.source.loopStart = loopStart ?? 0
+        this.source.loopEnd = loopEnd ?? this.source.buffer.duration
 
-            this.#source = this.#context.createMediaElementSource(this.audio)
-            this.#source.connect(this.#gain)
-
-            if (this.audio.readyState >= 2) {
-                resolve()
-                this.setVolume(this.#volume)
-            } else {
-                this.audio.oncanplay = () => {
-                    resolve()
-                    this.setVolume(this.#volume)
-                }
-            }
-        })
+        this.source.connect(this.gain)
+        this.source.start()
     }
 
     static async play() {
-        await this.#context.resume()
-        await this.audio?.play()
+        await this.context.resume()
     }
 
-    static pause() {
-        this.audio?.pause()
+    static async pause() {
+        await this.context.suspend()
     }
 
     static async fadeOut(durationMS: number) {
@@ -58,16 +57,14 @@ export class BGM {
     }
 
     static async fade(volume: number, durationMS: number) {
-        this.#gain.gain.cancelScheduledValues(this.#context.currentTime)
-        this.#gain.gain.linearRampToValueAtTime(volume, this.#context.currentTime + durationMS / 1000)
+        this.gain.gain.cancelScheduledValues(this.context.currentTime)
+        this.gain.gain.linearRampToValueAtTime(volume, this.context.currentTime + durationMS / 1000)
 
-        await new Promise((resolve) => setTimeout(resolve, durationMS))
+        await new Promise<void>((resolve) => setTimeout(() => resolve(), durationMS))
     }
 
-    static setVolume(volume: number) {
-        this.#volume = volume
-
-        this.#gain.gain.cancelScheduledValues(0)
-        this.#gain.gain.value = this.#volume
+    static #setVolume(volume: number) {
+        this.gain.gain.cancelScheduledValues(0)
+        this.gain.gain.value = volume
     }
 }

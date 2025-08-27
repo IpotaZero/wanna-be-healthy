@@ -22,9 +22,10 @@ export class Sound {
 
 export class SE {
     static click = new Sound("assets/sounds/クリック.mp3")
-    static voice = new Sound("assets/sounds/select.wav")
+    static voice = new Sound("assets/sounds/select.wav", 0.5)
     static damage = new Sound("assets/sounds/damage.mp3", 0.3)
     static MCR = new Sound("assets/sounds/MCR.wav", 0.3)
+    static key = new Sound("assets/sounds/キーボード1.mp3", 0.8)
 
     static setVolume(volume: number) {
         Object.values(this).forEach((se) => {

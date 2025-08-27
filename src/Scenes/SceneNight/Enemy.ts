@@ -12,8 +12,6 @@ export abstract class Enemy extends Actor {
 
     static async loadTexture() {}
 
-    deltaScaler: number = 1
-
     frame = 0
 
     constructor(texture?: PIXI.Texture) {
@@ -49,9 +47,6 @@ export abstract class Enemy extends Actor {
 
     update(deltaScaler: number) {
         super.update(deltaScaler)
-
-        this.deltaScaler = deltaScaler
-
         this.frame++
     }
 
@@ -64,7 +59,7 @@ export abstract class Enemy extends Actor {
                 for (let i = 0; i < frame; i++) {
                     this.p = t
                         .sub(o)
-                        .scale(ease((i + 1) / frame))
+                        .scale(ease((i + this.$deltaScaler) / frame))
                         .add(o)
                     yield
                 }

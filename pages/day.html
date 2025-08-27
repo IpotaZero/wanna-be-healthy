@@ -1,30 +1,34 @@
 <div class="page" id="day">
-    <div id="nemu">
-        <img src="./assets/classroom.png" alt="" class="nemu" />
-        <img src="./assets/hand-up.png" alt="" class="nemu" />
-    </div>
+    <main>
+        <div id="nemu">
+            <img src="./assets/classroom.png" alt="" class="nemu" />
+            <img src="./assets/hand-up.png" alt="" class="nemu" />
+        </div>
 
-    <div id="gauge-area">
-        <span id="gauge"></span>
-    </div>
+        <div id="gauge-area">
+            <span id="gauge"></span>
+        </div>
 
-    <div id="question"></div>
+        <div id="question"></div>
 
-    <form id="form" action="" autocomplete="off">
-        <input id="input" type="text" value="ここをクリックして始める" />
-    </form>
+        <form id="form" action="" autocomplete="off">
+            <input id="input" type="text" value="ここをクリックして始める" />
+        </form>
 
-    <div id="bottom">
-        <div id="score">Score: 0</div>
-        <span id="score-up">+1</span>
-    </div>
+        <div id="bottom">
+            <div id="score">Score: 0</div>
+            <span id="score-up">+1</span>
+        </div>
+    </main>
+
+    <sub></sub>
 </div>
 
 <style>
     .text {
         position: absolute;
         background-color: whitesmoke;
-        top: 40dvh;
+        top: 30dvh;
     }
 
     #container {
@@ -33,11 +37,32 @@
 
     #day {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: flex-start;
 
         position: relative;
 
         background-color: whitesmoke;
+
+        & main {
+            aspect-ratio: 5/4;
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+
+            align-items: center;
+        }
+
+        & sub {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+
+            background-color: #444;
+            padding: 2dvh;
+        }
     }
 
     #question {
@@ -92,7 +117,7 @@
         position: absolute;
         height: 50dvh;
 
-        filter: drop-shadow(0px 0.5dvh 0.5dvh rgba(0, 0, 0, 0.6));
+        filter: drop-shadow(0px 0.3dvh 0.3dvh rgba(0, 0, 0, 0.3));
     }
 
     #gauge-area {
@@ -111,7 +136,7 @@
 
         transform-origin: left center; /* 左端を固定 */
 
-        background-color: orange;
+        background-color: palegreen;
     }
 
     #bottom {

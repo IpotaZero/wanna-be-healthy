@@ -1,20 +1,30 @@
-<div class="page">
+<div class="page" id="novel">
     <main>
-        <canvas id="canvas"></canvas>
+        <div id="img"></div>
+        <div id="bottom"></div>
     </main>
-
-    <sub> </sub>
+    <sub></sub>
 </div>
 
 <style>
-    .page {
-        cursor: none;
+    #img {
+        flex: 1;
     }
 
-    canvas {
-        position: absolute;
-        height: 90%;
-        background-color: #111;
+    #bottom {
+        height: 28dvh;
+        width: 100%;
+
+        background-color: black;
+
+        color: whitesmoke;
+
+        padding: 4dvh;
+
+        & * {
+            font-family: mincho;
+            font-size: 4dvh;
+        }
     }
 
     main {

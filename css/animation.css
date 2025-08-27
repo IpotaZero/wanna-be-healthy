@@ -1,24 +1,25 @@
 .text-end::after {
     content: "/";
-    animation: blink infinite 1s;
+    animation: blink 1s steps(1, end) infinite;
 }
 
 @keyframes blink {
     0% {
         opacity: 1;
     }
-
+    49% {
+        opacity: 1;
+    }
     50% {
         opacity: 0;
     }
-
     100% {
-        opacity: 1;
+        opacity: 0;
     }
 }
 
 .fade-out {
-    animation: fade-out 1s;
+    animation: fade-out 1s forwards;
 }
 
 @keyframes fade-out {

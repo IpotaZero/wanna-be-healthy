@@ -38,7 +38,7 @@ export class Player extends Actor {
         let s = this.speed
         if (keyboard.pressed.has("ShiftLeft")) s /= 2
 
-        const u = v.normalize().scale(s * deltaScaler)
+        const u = v.normalize().scale(s * this.$deltaScaler)
         this.x += u.x
         this.y += u.y
 

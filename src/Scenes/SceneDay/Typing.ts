@@ -28,6 +28,7 @@ export class Typing {
             this.#input.addEventListener(
                 "focus",
                 () => {
+                    this.#input.style.cursor = "none"
                     this.onStart()
                     this.#updateText()
                     resolve()

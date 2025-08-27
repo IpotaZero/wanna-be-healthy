@@ -5,7 +5,7 @@ import { Scene } from "./Scene.js"
 import { Player } from "./SceneNight/Player.js"
 import { WIDTH, HEIGHT, CW, CH } from "./SceneNight/Constants.js"
 import { G } from "./SceneNight/global.js"
-import { Enemy0 } from "./SceneNight/Stages.js"
+import { Enemy0, Enemy1, Enemy2, Enemy3 } from "./SceneNight/Stages.js"
 import { Timer } from "../utils/Timer.js"
 import { Scenes } from "./Scenes.js"
 import { ETyping } from "../utils/ETyping.js"
@@ -13,7 +13,9 @@ import { Awaits } from "../utils/Awaits.js"
 import { Danmaku } from "./SceneNight/Danmaku.js"
 import { SE } from "../SE.js"
 import { OK } from "../utils/ok.js"
-import { BGM } from "../utils/BGM.js"
+import { BGM } from "../utils/BGM"
+import { State } from "../State.js"
+import { Input } from "../utils/Input.js"
 
 export class SceneNight extends Scene {
     readonly ready: Promise<void>
@@ -22,26 +24,33 @@ export class SceneNight extends Scene {
     #lineProgress: number = 0
 
     readonly #dawnLine = new PIXI.Graphics()
-    readonly #dawnTimer = new Timer(1280)
+    readonly #dawnTimer = new Timer(720)
 
     readonly #danmaku = new Danmaku()
 
-    constructor() {
+    #difficulty
+
+    constructor(difficulty: number) {
         super()
 
+        this.#difficulty = difficulty
+
+        G.bullets = []
         G.enemies = []
         G.app = new PIXI.Application()
 
         this.#dawnTimer.action()
 
-        this.#danmaku.onDamage = () => {
-            this.#lineProgress = Math.max(this.#lineProgress - 0.1, 0)
+        this.#danmaku.onDamage = (damage) => {
+            this.#lineProgress = Math.max(this.#lineProgress - damage / 240, 0)
             SE.damage.play()
         }
 
         this.#danmaku.onGraze = () => {
             this.#lineProgress += 0.005
         }
+
+        Input.isAvailable = true
 
         this.ready = this.#setup()
     }
@@ -73,10 +82,10 @@ export class SceneNight extends Scene {
     }
 
     #updateRotatingLine(deltaTime: number) {
-        const rotationDuration = 12.0
+        const rotationDuration = 20.0
         const gap = 16
 
-        this.#lineProgress += deltaTime / (60 * rotationDuration)
+        this.#lineProgress += (deltaTime / (60 * rotationDuration)) * Math.sqrt(this.#difficulty + 1)
 
         this.#rotatingLine.clear()
 
@@ -94,9 +103,11 @@ export class SceneNight extends Scene {
             { start: 0.75, end: 1.0, to: (p: number) => [frameX, frameY + frameHeight * (1 - p)] },
         ]
 
+        const pr = this.#dawnTimer.progress()
+
         for (const seg of segments) {
-            if (this.#lineProgress >= seg.start) {
-                const p = Math.min((this.#lineProgress - seg.start) / (seg.end - seg.start), 1)
+            if (pr >= seg.start) {
+                const p = Math.min((pr - seg.start) / (seg.end - seg.start), 1)
                 const [x, y] = seg.to(p)
                 this.#rotatingLine.lineTo(x, y)
             }
@@ -108,11 +119,11 @@ export class SceneNight extends Scene {
     #updateDawnLine() {
         this.#dawnLine.clear()
 
-        const progress = this.#dawnTimer.progress()
+        const progress = 1 - this.#lineProgress
 
         this.#dawnLine
-            .moveTo((CH - WIDTH) / 2 + 100, CH - 100)
-            .lineTo((CH - WIDTH) / 2 + WIDTH * progress, CH - 100)
+            .moveTo((CH - WIDTH) / 2 + 130, CH - 100)
+            .lineTo((CH - WIDTH) / 2 + 130 + (WIDTH / 2) * progress, CH - 100)
             .stroke({
                 color: 0xffff80,
                 width: 24,
@@ -132,9 +143,11 @@ export class SceneNight extends Scene {
             },
         })
 
-        await Promise.all([Enemy0.loadTexture(), loadFont])
+        const Enemy = [Enemy0, Enemy1, Enemy2, Enemy3][State.day]
 
-        G.enemies.push(new Enemy0())
+        await Promise.all([Enemy.loadTexture(), loadFont])
+
+        G.enemies.push(new Enemy())
         G.app.stage.addChild(...G.enemies)
 
         await BGM.fetch("assets/sounds/bullet.mp3")
@@ -148,6 +161,8 @@ export class SceneNight extends Scene {
 
         const html = await fetch("./pages/night.html").then((response) => response.text())
         new Pages(container, ".page", html)
+
+        State.display(container.querySelector("sub")!)
 
         const cvs = container.querySelector<HTMLCanvasElement>("canvas")!
 
@@ -171,12 +186,12 @@ export class SceneNight extends Scene {
         G.app.stage.addChild(this.#dawnLine)
 
         const text = new PIXI.Text({
-            text: "DAWN",
+            text: "Awareness:",
             style: {
                 fill: 0xf5f5f5,
                 fontFamily: "dot",
             },
-            x: (CW - WIDTH) / 2 + 50,
+            x: (CW - WIDTH) / 2 + 30,
             y: CH - 100 - 4,
             anchor: 0.5,
         })
@@ -196,7 +211,7 @@ export class SceneNight extends Scene {
     async #start() {
         await this.#displayText()
 
-        G.app.ticker.maxFPS = 60
+        G.app.ticker.maxFPS = 30
         G.app.ticker.add(this.#update.bind(this))
     }
 
@@ -206,7 +221,7 @@ export class SceneNight extends Scene {
         text.style.color = "whitesmoke"
         text.style.backgroundColor = "#000000"
 
-        const container = document.getElementById("container")!
+        const container = document.querySelector("#container main")!
         container.appendChild(text)
 
         await Awaits.key()
@@ -222,8 +237,15 @@ class SceneClear extends Scene {
     ready: Promise<void>
 
     #ok = new OK(async () => {
-        const { SceneDay } = await import("./SceneDay.js")
-        Scenes.goto(() => new SceneDay())
+        State.day++
+
+        if (State.day === 4) {
+            const { SceneNovel } = await import("./SceneNovel.js")
+            Scenes.goto(() => new SceneNovel(), { msIn: 1000, msOut: 1000 })
+        } else {
+            const { SceneDay } = await import("./SceneDay.js")
+            Scenes.goto(() => new SceneDay())
+        }
     })
 
     constructor() {
@@ -236,7 +258,7 @@ class SceneClear extends Scene {
     }
 
     async #setPage() {
-        const container = document.getElementById("container")!
+        const container = document.querySelector("#container main")!
 
         container.innerHTML += `
             <i-typing se="assets/sounds/select.wav">ねむれた...</i-typing>
@@ -269,7 +291,8 @@ class SceneFail extends Scene {
 
     constructor() {
         super()
-        this.ready = this.#setPage()
+        this.ready = Promise.resolve()
+        this.#setPage()
     }
 
     async end() {
@@ -277,7 +300,7 @@ class SceneFail extends Scene {
     }
 
     async #setPage() {
-        const container = document.getElementById("container")!
+        const container = document.querySelector("#container main")!
 
         container.innerHTML += `
             <i-typing se="assets/sounds/select.wav">てつやして しまった...</i-typing>
@@ -293,6 +316,19 @@ class SceneFail extends Scene {
         const text = container.querySelector<ETyping>("i-typing")!
         text.onEnd = () => {
             text.classList.add("text-end")
+        }
+
+        await Awaits.ok()
+
+        State.day++
+        State.yami++
+
+        if (State.day === 4) {
+            const { SceneNovel } = await import("./SceneNovel.js")
+            Scenes.goto(() => new SceneNovel(), { msIn: 1000, msOut: 1000 })
+        } else {
+            const { SceneDay } = await import("./SceneDay.js")
+            Scenes.goto(() => new SceneDay())
         }
     }
 }

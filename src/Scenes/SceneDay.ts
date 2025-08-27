@@ -1,3 +1,4 @@
+import { State } from "../State"
 import { SE } from "../SE"
 import { Awaits } from "../utils/Awaits"
 import { BGM } from "../utils/BGM"
@@ -6,7 +7,6 @@ import { Input, keyboard } from "../utils/Input"
 import { Pages } from "../utils/Pages"
 import { Scene } from "./Scene"
 import { Typing } from "./SceneDay/Typing"
-import { SceneNight } from "./SceneNight"
 import { Scenes } from "./Scenes"
 
 export class SceneDay extends Scene {
@@ -21,6 +21,8 @@ export class SceneDay extends Scene {
     constructor() {
         super()
 
+        Input.isAvailable = false
+
         this.ready = this.#setup()
     }
 
@@ -31,11 +33,13 @@ export class SceneDay extends Scene {
     async #setup() {
         const [html, _, csv] = await Promise.all([
             fetch("pages/day.html"),
-            BGM.fetch("assets/sounds/stage-1.mp3", false),
-            fetch("assets/typing/stage-0.csv"),
+            BGM.fetch(`assets/sounds/stage-${~~(State.day / 2)}.mp3`, { loop: false }),
+            fetch(`assets/typing/stage-${State.day}.csv`),
         ])
 
-        this.#pages = new Pages(document.getElementById("container")!, "#day", await html.text())
+        const container = document.getElementById("container")!
+        this.#pages = new Pages(container, "#day", await html.text())
+        State.display(container.querySelector("sub")!)
 
         this.#start(await csv.text())
     }
@@ -46,7 +50,7 @@ export class SceneDay extends Scene {
 
         const t = new ETyping("ノートをとれ!", SE.voice)
         t.classList.add("text")
-        document.getElementById("container")!.appendChild(t)
+        document.querySelector("#container main")!.appendChild(t)
 
         this.#typing = new Typing(csv.split("\n"))
 
@@ -76,23 +80,30 @@ export class SceneDay extends Scene {
         await this.#typing.ready
 
         BGM.play()
-        BGM.audio!.onended = () => {
+        BGM.source!.onended = () => {
             this.#typing.finish()
             this.#finish(score)
         }
 
         const gauge = document.getElementById("gauge")!
-        gauge.style.transition = `transform ${BGM.audio?.duration}s linear`
+        gauge.style.transition = `transform ${BGM.source?.buffer?.duration ?? 1}s linear`
         gauge.style.transform = "scaleX(0)"
     }
 
     async #finish(score: number) {
         const t = new ETyping(`ねむけレベル: ${score}`, SE.voice)
         t.classList.add("text")
-        document.getElementById("container")!.appendChild(t)
+        document.querySelector("#container main")!.appendChild(t)
 
+        await Promise.race([Awaits.sleep(1000), Awaits.ok()])
         await Awaits.ok()
 
-        Scenes.goto(() => new SceneNight())
+        if (State.dark) {
+            const { SceneNight } = await import("./SceneNight")
+            Scenes.goto(() => new SceneNight(0))
+        } else {
+            const { SceneMedicine } = await import("./SceneMedicine")
+            Scenes.goto(() => new SceneMedicine(score))
+        }
     }
 }

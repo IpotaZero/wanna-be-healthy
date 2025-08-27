@@ -87,6 +87,7 @@ export class Input {
 
     static #handleKeyDown(e: KeyboardEvent) {
         if (!this.isAvailable) return
+        e.preventDefault()
 
         if (!this.keyboard.pressed.has(e.code as Input.KeyCode)) {
             this.keyboard.pushed.add(e.code as Input.KeyCode)
@@ -98,6 +99,7 @@ export class Input {
 
     static #handleKeyUp(e: KeyboardEvent) {
         if (!this.isAvailable) return
+        e.preventDefault()
 
         this.keyboard.pressed.delete(e.code as Input.KeyCode)
         this.keyboard.upped.add(e.code as Input.KeyCode)

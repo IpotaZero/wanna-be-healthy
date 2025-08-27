@@ -17,7 +17,7 @@
 
     font-size: 6dvh;
 
-    font-family: dot, serif;
+    font-family: dot, mincho, serif;
 
     user-select: none;
     touch-action: none;
@@ -55,14 +55,16 @@ body {
     align-items: center;
     justify-content: center;
 
-    aspect-ratio: 4/3;
-    height: 100%;
+    aspect-ratio: 8/5;
+    height: 90%;
     width: auto;
     transition: opacity 0.3s ease;
 
     overflow: hidden;
 
     background-color: whitesmoke;
+
+    box-shadow: 0px 0px 24dvh 1dvh rgba(255, 255, 255, 0.35);
 }
 
 #error {
@@ -84,31 +86,41 @@ body {
     }
 }
 
+#cover {
+    position: absolute;
+    height: 90%;
+    aspect-ratio: 8/5;
+
+    z-index: 1000;
+
+    pointer-events: none;
+}
+
 #texture {
     position: absolute;
+    width: 100%;
     height: 100%;
-    aspect-ratio: 4/3;
 
     background-image: url(../assets/images/braun.webp);
-    background-size: 0.3%;
+    background-size: 0.4%;
     /* mix-blend-mode: multiply; */
 
     pointer-events: none;
 
     opacity: 0.04;
 
-    z-index: 1000;
-
     /* animation: b 0.1s infinite; */
+
+    pointer-events: none;
 }
 
 #overlay {
     position: absolute;
+    width: 100%;
     height: 100%;
-    aspect-ratio: 4/3;
 
-    background-color: greenyellow;
-    opacity: 0.4;
+    background-color: rgba(152, 251, 152, 0.5);
+    opacity: 0.5;
     mix-blend-mode: screen;
 
     pointer-events: none;
@@ -117,12 +129,24 @@ body {
 
     animation: b 0.1s infinite;
 
-    box-shadow: inset 0px 0px 6dvh 0px rgba(0, 0, 0, 1);
+    box-shadow: inset 0px 0px 32dvh 3dvh rgba(0, 0, 0, 1);
+    pointer-events: none;
+}
+
+#blur {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    background-color: #111c;
+    opacity: 0.2;
+
+    pointer-events: none;
 }
 
 @keyframes b {
     0% {
-        opacity: 0.38;
+        opacity: 0.35;
     }
 
     50% {
@@ -130,6 +154,15 @@ body {
     }
 
     100% {
-        opacity: 0.38;
+        opacity: 0.35;
     }
+}
+
+.vale {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: #111;
+
+    z-index: 10000;
 }

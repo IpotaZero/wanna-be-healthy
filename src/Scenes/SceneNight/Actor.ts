@@ -8,6 +8,8 @@ export abstract class Actor extends PIXI.Sprite {
     Gs: ((me: Actor) => Generator)[] = []
     gs: Generator[] = []
 
+    protected $deltaScaler = 1
+
     get p() {
         return vec.from(this.position)
     }
@@ -19,7 +21,7 @@ export abstract class Actor extends PIXI.Sprite {
     clone(): typeof this {
         const c = Object.getPrototypeOf(this).constructor
 
-        const actor = new c(this.texture)
+        const actor = new c(this.texture) as typeof this
         actor.x = this.x
         actor.y = this.y
         actor.rotation = this.rotation
@@ -42,6 +44,8 @@ export abstract class Actor extends PIXI.Sprite {
     }
 
     update(deltaScaler: number) {
+        this.$deltaScaler = deltaScaler
+
         const done: (boolean | undefined)[] = []
         this.gs.forEach((g) => done.push(g.next().done))
         this.gs = this.gs.filter((_, i) => !done[i])

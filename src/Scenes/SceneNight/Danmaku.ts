@@ -5,7 +5,7 @@ import { G } from "./global"
 export class Danmaku {
     readonly #grazeTimer = new Timer(30)
     onGraze() {}
-    onDamage() {}
+    onDamage(damage: number) {}
 
     update(ds: number) {
         for (let i = 0; i < Math.round(ds); i++) {
@@ -35,7 +35,7 @@ export class Danmaku {
 
             b.life = 0
 
-            this.onDamage()
+            this.onDamage(b.damage)
         })
 
         this.#grazeTimer.update()

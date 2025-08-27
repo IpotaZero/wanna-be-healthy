@@ -1,0 +1,24 @@
+#state {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+
+    top: 4dvh;
+    left: 4dvh;
+
+    font-size: 5dvh;
+}
+
+#yami-area {
+    display: flex;
+    align-items: center;
+
+    white-space: nowrap;
+}
+
+#yami {
+    display: flex;
+    background-color: black;
+    height: 1em;
+}

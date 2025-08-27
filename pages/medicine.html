@@ -1,0 +1,32 @@
+<div class="page" id="medicine">
+    <i-typing id="dame" class="transparent"> もうつかっては いけない </i-typing>
+
+    <i-typing id="mi"> みんざいを つかう? </i-typing>
+
+    <div>
+        <button>つかう</button>
+        <button>つかわない</button>
+    </div>
+</div>
+
+<style>
+    #dame {
+        height: 1em;
+    }
+
+    #medicine {
+        flex-direction: column;
+        gap: 4dvh;
+    }
+
+    button {
+        border: 0.5dvh #111 solid;
+        padding: 0.5em;
+
+        &:hover,
+        &:focus {
+            scale: 1.05;
+            animation: shake 0.1s infinite;
+        }
+    }
+</style>
