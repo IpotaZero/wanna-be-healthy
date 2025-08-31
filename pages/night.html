@@ -1,31 +1,37 @@
-<div class="page">
-    <main>
-        <canvas id="canvas"></canvas>
-    </main>
-
-    <sub> </sub>
+<div class="page" id="night">
+    <span class="move-right fade-in text-end">よる</span>
 </div>
+
+<div class="page" id="game">
+    <canvas id="canvas"></canvas>
+</div>
+
+<sub> </sub>
 
 <style>
     .page {
         cursor: none;
-    }
-
-    canvas {
-        position: absolute;
-        height: 90%;
-        background-color: #111;
-    }
-
-    main {
         aspect-ratio: 5/4;
+    }
+
+    #night {
+        background-color: #111;
+        color: whitesmoke;
+    }
+
+    #game {
         height: 100%;
 
-        display: flex;
         flex-direction: column;
 
         justify-content: center;
         align-items: center;
+
+        & canvas {
+            position: absolute;
+            height: 90%;
+            background-color: #111;
+        }
     }
 
     sub {

@@ -30,6 +30,8 @@ export class SceneNight extends Scene {
 
     #difficulty
 
+    #page!: Pages
+
     constructor(difficulty: number) {
         super()
 
@@ -150,7 +152,9 @@ export class SceneNight extends Scene {
         G.enemies.push(new Enemy())
         G.app.stage.addChild(...G.enemies)
 
-        await BGM.fetch("assets/sounds/bullet.mp3")
+        const detune = State.dark ? -100 : 0
+
+        await BGM.fetch("assets/sounds/bullet.mp3", { detune })
         BGM.play()
 
         this.#start()
@@ -160,7 +164,7 @@ export class SceneNight extends Scene {
         const container = document.getElementById("container")!
 
         const html = await fetch("./pages/night.html").then((response) => response.text())
-        new Pages(container, ".page", html)
+        this.#page = new Pages(container, "#night", html)
 
         State.display(container.querySelector("sub")!)
 
@@ -209,6 +213,9 @@ export class SceneNight extends Scene {
     }
 
     async #start() {
+        await Awaits.ok()
+        await this.#page.goto("#game", { msIn: 600 })
+
         await this.#displayText()
 
         G.app.ticker.maxFPS = 30
@@ -221,7 +228,7 @@ export class SceneNight extends Scene {
         text.style.color = "whitesmoke"
         text.style.backgroundColor = "#000000"
 
-        const container = document.querySelector("#container main")!
+        const container = document.querySelector("#container #game")!
         container.appendChild(text)
 
         await Awaits.key()
@@ -241,7 +248,7 @@ class SceneClear extends Scene {
 
         if (State.day === 4) {
             const { SceneNovel } = await import("./SceneNovel.js")
-            Scenes.goto(() => new SceneNovel(), { msIn: 1000, msOut: 1000 })
+            Scenes.goto(() => new SceneNovel(false), { msIn: 1000, msOut: 1000 })
         } else {
             const { SceneDay } = await import("./SceneDay.js")
             Scenes.goto(() => new SceneDay())
@@ -258,7 +265,7 @@ class SceneClear extends Scene {
     }
 
     async #setPage() {
-        const container = document.querySelector("#container main")!
+        const container = document.querySelector("#container #game")!
 
         container.innerHTML += `
             <i-typing se="assets/sounds/select.wav">ねむれた...</i-typing>
@@ -292,7 +299,44 @@ class SceneFail extends Scene {
     constructor() {
         super()
         this.ready = Promise.resolve()
-        this.#setPage()
+
+        if (State.dark) {
+            this.#dark()
+        } else {
+            this.#setPage()
+        }
+    }
+
+    async #next() {
+        State.day++
+        State.yami++
+
+        if (State.day === 4) {
+            const { SceneNovel } = await import("./SceneNovel.js")
+            await Scenes.goto(() => new SceneNovel(false), { msIn: 1000, msOut: 1000 })
+        } else {
+            const { SceneDay } = await import("./SceneDay.js")
+            await Scenes.goto(() => new SceneDay())
+        }
+    }
+
+    async #dark() {
+        await BGM.pause()
+
+        SE.pakipaki.play()
+        const vale = document.createElement("div")
+        vale.classList.add("vale")
+        document.body.appendChild(vale)
+
+        await Awaits.sleep(1500)
+
+        await this.#next()
+
+        await Awaits.sleep(1000)
+
+        vale.classList.add("fade-out")
+        await Awaits.sleep(1000)
+        vale.remove()
     }
 
     async end() {
@@ -320,15 +364,6 @@ class SceneFail extends Scene {
 
         await Awaits.ok()
 
-        State.day++
-        State.yami++
-
-        if (State.day === 4) {
-            const { SceneNovel } = await import("./SceneNovel.js")
-            Scenes.goto(() => new SceneNovel(), { msIn: 1000, msOut: 1000 })
-        } else {
-            const { SceneDay } = await import("./SceneDay.js")
-            Scenes.goto(() => new SceneDay())
-        }
+        this.#next()
     }
 }

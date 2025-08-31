@@ -32,6 +32,6 @@ export class ScenePretitle extends Scene {
         await Awaits.sleep(SE.key.duration * 1000)
         SE.MCR.play()
 
-        Scenes.goto(() => new SceneTitle(), { msIn: 2000, msOut: 1000 })
+        Scenes.goto(() => new SceneTitle(), { msIn: 1500, msOut: 800 })
     }
 }

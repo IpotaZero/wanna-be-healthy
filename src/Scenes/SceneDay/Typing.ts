@@ -53,5 +53,7 @@ export class Typing {
 
         this.#questionNum = num
         this.#question.textContent = this.#questions[num]
+
+        this.#input.placeholder = this.#questions[num]
     }
 }

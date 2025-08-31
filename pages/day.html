@@ -1,30 +1,65 @@
 <div class="page" id="day">
-    <main>
-        <div id="nemu">
-            <img src="./assets/classroom.png" alt="" class="nemu" />
-            <img src="./assets/hand-up.png" alt="" class="nemu" />
-        </div>
-
-        <div id="gauge-area">
-            <span id="gauge"></span>
-        </div>
-
-        <div id="question"></div>
-
-        <form id="form" action="" autocomplete="off">
-            <input id="input" type="text" value="ここをクリックして始める" />
-        </form>
-
-        <div id="bottom">
-            <div id="score">Score: 0</div>
-            <span id="score-up">+1</span>
-        </div>
-    </main>
-
-    <sub></sub>
+    <span class="move-right fade-in text-end">ひる</span>
 </div>
 
+<div class="page" id="game">
+    <div id="nemu">
+        <img src="./assets/classroom.png" alt="" class="nemu" />
+        <img src="./assets/hand-up.png" alt="" class="nemu" />
+    </div>
+
+    <div id="gauge-area">
+        <span id="gauge"></span>
+    </div>
+
+    <div id="question"></div>
+
+    <form id="form" action="" autocomplete="off">
+        <input id="input" type="text" value="ここをクリックして始める" />
+    </form>
+
+    <div id="bottom">
+        <div id="score">Score: 0</div>
+        <span id="score-up">+1</span>
+    </div>
+</div>
+
+<sub> </sub>
+
 <style>
+    .page {
+        aspect-ratio: 5/4;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+
+        position: relative;
+
+        background-color: whitesmoke;
+
+        &.hidden {
+            display: none;
+        }
+    }
+
+    sub {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+
+        background-color: #444;
+        padding: 2dvh;
+    }
+
+    #day {
+        justify-content: center;
+        align-items: center;
+
+        cursor: pointer;
+    }
+
     .text {
         position: absolute;
         background-color: whitesmoke;
@@ -35,133 +70,108 @@
         background-color: #111;
     }
 
-    #day {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
+    #game {
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
 
-        position: relative;
-
-        background-color: whitesmoke;
-
-        & main {
-            aspect-ratio: 5/4;
-            height: 100%;
-
+        & #question {
             display: flex;
-            flex-direction: column;
-
+            flex: 1;
+            justify-content: center;
             align-items: center;
+
+            font-family: mincho, serif;
         }
 
-        & sub {
-            height: 100%;
+        & #form {
+            display: flex;
+            flex: 1;
+            justify-content: center;
+            align-items: center;
+            width: 50%;
+        }
+
+        & #input {
+            font-family: mincho, serif;
+            font-size: 5dvh;
             width: 100%;
-            display: flex;
-            flex-direction: column;
-
-            background-color: #444;
-            padding: 2dvh;
-        }
-    }
-
-    #question {
-        display: flex;
-        flex: 1;
-        justify-content: center;
-        align-items: center;
-
-        font-family: mincho, serif;
-    }
-
-    #form {
-        display: flex;
-        flex: 1;
-        justify-content: center;
-        align-items: center;
-        width: 50%;
-    }
-
-    #input {
-        font-family: mincho, serif;
-        font-size: 5dvh;
-        width: 100%;
-        text-align: center;
-    }
-
-    #nemu {
-        position: absolute;
-        left: 2dvh;
-        bottom: 0dvh;
-
-        height: 50dvh;
-
-        & :nth-child(1) {
-            display: flex;
+            text-align: center;
         }
 
-        & :nth-child(2) {
-            display: none;
-        }
-
-        &.up > :nth-child(1) {
-            display: none;
-        }
-
-        &.up > :nth-child(2) {
-            display: flex;
-        }
-    }
-
-    .nemu {
-        position: absolute;
-        height: 50dvh;
-
-        filter: drop-shadow(0px 0.3dvh 0.3dvh rgba(0, 0, 0, 0.3));
-    }
-
-    #gauge-area {
-        display: flex;
-        flex: 1;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-    }
-
-    #gauge {
-        display: flex;
-
-        height: 6dvh;
-        width: 80%;
-
-        transform-origin: left center; /* 左端を固定 */
-
-        background-color: palegreen;
-    }
-
-    #bottom {
-        position: relative;
-
-        width: 100%;
-        height: 38dvh;
-
-        & #score {
+        & #nemu {
             position: absolute;
-            right: 0;
-            bottom: 0;
+            left: 2dvh;
+            bottom: 0dvh;
+
+            height: 50dvh;
+
+            & :nth-child(1) {
+                display: flex;
+            }
+
+            & :nth-child(2) {
+                display: none;
+            }
+
+            &.up > :nth-child(1) {
+                display: none;
+            }
+
+            &.up > :nth-child(2) {
+                display: flex;
+            }
         }
 
-        & #score-up {
+        & .nemu {
             position: absolute;
-            display: none;
-            right: 0;
-            bottom: 0;
+            height: 50dvh;
+
+            filter: drop-shadow(0px 0.3dvh 0.3dvh rgba(0, 0, 0, 0.3));
         }
 
-        & #score.up ~ #score-up {
+        & #gauge-area {
             display: flex;
-            animation: up 0.5s;
-            opacity: 0;
+            flex: 1;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        & #gauge {
+            display: flex;
+
+            height: 6dvh;
+            width: 80%;
+
+            transform-origin: left center; /* 左端を固定 */
+
+            background-color: palegreen;
+        }
+
+        & #bottom {
+            position: relative;
+
+            width: 100%;
+            height: 38dvh;
+
+            & #score {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+            }
+
+            & #score-up {
+                position: absolute;
+                display: none;
+                right: 0;
+                bottom: 1em;
+            }
+
+            & #score.up ~ #score-up {
+                display: flex;
+                animation: move-up 1s steps(10, end) forwards, fade-out 1s steps(10, end) forwards;
+            }
         }
     }
 

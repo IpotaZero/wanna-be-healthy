@@ -31,9 +31,11 @@ export class SceneDay extends Scene {
     }
 
     async #setup() {
+        const detune = State.dark ? -100 : 0
+
         const [html, _, csv] = await Promise.all([
             fetch("pages/day.html"),
-            BGM.fetch(`assets/sounds/stage-${~~(State.day / 2)}.mp3`, { loop: false }),
+            BGM.fetch(`assets/sounds/stage-${~~(State.day / 2)}.mp3`, { loop: false, detune }),
             fetch(`assets/typing/stage-${State.day}.csv`),
         ])
 
@@ -45,12 +47,16 @@ export class SceneDay extends Scene {
     }
 
     async #start(csv: string) {
+        await Awaits.ok()
+
+        await this.#pages.goto("#game", { msIn: 600 })
+
         let score = 0
         const scoreElm = document.getElementById("score")!
 
         const t = new ETyping("ノートをとれ!", SE.voice)
         t.classList.add("text")
-        document.querySelector("#container main")!.appendChild(t)
+        document.querySelector("#container #game")!.appendChild(t)
 
         this.#typing = new Typing(csv.split("\n"))
 
@@ -93,7 +99,7 @@ export class SceneDay extends Scene {
     async #finish(score: number) {
         const t = new ETyping(`ねむけレベル: ${score}`, SE.voice)
         t.classList.add("text")
-        document.querySelector("#container main")!.appendChild(t)
+        document.querySelector("#container #game")!.appendChild(t)
 
         await Promise.race([Awaits.sleep(1000), Awaits.ok()])
         await Awaits.ok()

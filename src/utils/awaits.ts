@@ -1,19 +1,18 @@
 export class Awaits {
     static fadeOut(container: HTMLElement, ms: number = 200): Promise<void> {
-        container.style.transition = `opacity ${ms}ms`
-        container.style.opacity = "0"
         container.style.pointerEvents = "none"
+        container.style.transition = `opacity ${ms}ms steps(10, end)`
+        container.style.opacity = "0"
 
         return this.sleep(ms)
     }
 
     static async fadeIn(container: HTMLElement, ms: number = 200) {
-        container.style.transition = `opacity ${ms}ms`
+        container.style.pointerEvents = ""
+        container.style.transition = `opacity ${ms}ms steps(10, end)`
         container.style.opacity = "1"
 
-        await this.sleep(ms)
-
-        container.style.pointerEvents = "all"
+        return this.sleep(ms)
     }
 
     static sleep(ms: number) {

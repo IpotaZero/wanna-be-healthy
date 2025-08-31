@@ -26,6 +26,7 @@ export class SE {
     static damage = new Sound("assets/sounds/damage.mp3", 0.3)
     static MCR = new Sound("assets/sounds/MCR.wav", 0.3)
     static key = new Sound("assets/sounds/キーボード1.mp3", 0.8)
+    static pakipaki = new Sound("assets/sounds/pakipaki.mp3", 1)
 
     static setVolume(volume: number) {
         Object.values(this).forEach((se) => {

@@ -14,7 +14,6 @@ export class BGM {
         this.gain = this.context.createGain()
         this.gain.connect(this.context.destination)
     }
-
     static async fetch(
         path: string,
         {
@@ -22,7 +21,8 @@ export class BGM {
             loopEnd,
             loop,
             volume,
-        }: { loopStart?: number; loopEnd?: number; loop?: boolean; volume?: number } = {},
+            detune,
+        }: { loopStart?: number; loopEnd?: number; loop?: boolean; volume?: number; detune?: number } = {},
     ) {
         this.source?.stop()
         this.source?.disconnect()
@@ -38,6 +38,10 @@ export class BGM {
         this.source.loop = loop ?? true
         this.source.loopStart = loopStart ?? 0
         this.source.loopEnd = loopEnd ?? this.source.buffer.duration
+
+        if (detune !== undefined) {
+            this.source.detune.value = detune
+        }
 
         this.source.connect(this.gain)
         this.source.start()

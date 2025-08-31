@@ -7,19 +7,19 @@
     0% {
         opacity: 1;
     }
-    49% {
-        opacity: 1;
-    }
+
     50% {
         opacity: 0;
     }
+
     100% {
-        opacity: 0;
+        opacity: 1;
     }
 }
 
 .fade-out {
-    animation: fade-out 1s forwards;
+    animation: fade-out 1s steps(10, end) forwards;
+    opacity: 1;
 }
 
 @keyframes fade-out {
@@ -32,8 +32,51 @@
     }
 }
 
+.fade-in {
+    animation: fade-in 1s steps(10, end) forwards;
+    opacity: 0;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.move-right {
+    animation: move-right 1s steps(10, end) forwards;
+}
+
+@keyframes move-right {
+    from {
+        transform: translateX(-1em);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+.move-up {
+    animation: move-up 1s steps(10, end) forwards;
+}
+
+@keyframes move-up {
+    from {
+        transform: translateY(1em);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
 .shake {
-    animation: shake 0.5s infinite linear;
+    animation: shake 1s steps(1, end) infinite;
 }
 
 @keyframes shake {
@@ -70,4 +113,8 @@
     100% {
         transform: translate(0, 0);
     }
+}
+
+.fade-in.move-right {
+    animation: fade-in 1s steps(10, end) forwards, move-right 1s steps(10, end) forwards;
 }

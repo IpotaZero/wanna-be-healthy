@@ -1,3 +1,5 @@
+import { Awaits } from "./Awaits"
+
 type Handler = () => void
 
 export class Pages {
@@ -33,7 +35,7 @@ export class Pages {
     async #setupFirstPage(firstPageSelector: string) {
         const segments = firstPageSelector.split(" ")
         this.#history.push(...segments.slice(0, -1), segments.at(-1)!)
-        await this.#changePage(segments.at(-1)!, true)
+        await this.goto(segments.at(-1)!, { msIn: 0, msOut: 0 })
     }
 
     #setupLinkButtons() {
@@ -44,32 +46,44 @@ export class Pages {
             linkButton.addEventListener("click", () => {
                 if (sever) this.#history = []
                 this.#history.push(targetPageId)
-                this.#changePage(targetPageId, immediately)
+                this.goto(targetPageId)
             })
         })
     }
 
     #setupBackButtons() {
         this.#container.querySelectorAll<HTMLElement>("[data-back]").forEach((backButton) => {
-            const immediately = backButton.hasAttribute("data-immediately")
             const backDepth = Number.parseInt(backButton.getAttribute("data-back")!)
+
             if (isNaN(backDepth) || backDepth <= 0) {
                 console.warn("正しくないdata-back！", backButton)
                 return
             }
+
             backButton.addEventListener("click", () => {
-                if (this.#history.length <= backDepth) {
-                    console.warn("戻る履歴がない", backButton)
-                    return
+                const success = this.back(backDepth)
+
+                if (!success) {
+                    console.warn(backButton)
                 }
-                this.#history.splice(-backDepth)
-                const previousPageId = this.#history[this.#history.length - 1]
-                this.#changePage(previousPageId, immediately)
             })
         })
     }
 
-    async #changePage(pageSelector: string, immediately: boolean) {
+    async back(backDepth: number) {
+        if (this.#history.length <= backDepth) {
+            console.warn("戻る履歴がない")
+            return false
+        }
+
+        this.#history.splice(-backDepth)
+        const previousPageId = this.#history[this.#history.length - 1]
+        this.goto(previousPageId)
+
+        return true
+    }
+
+    async goto(pageSelector: string, { msIn = 200, msOut = 200 }: { msIn?: number; msOut?: number } = {}) {
         const targetPage = this.#container.querySelector(pageSelector)
 
         if (!targetPage) throw new Error(`そんなpageは無い: ${pageSelector}`)
@@ -78,8 +92,8 @@ export class Pages {
 
         this.before()
 
-        if (!immediately) {
-            await this.#fadeOut()
+        if (msIn > 0) {
+            await Awaits.fadeOut(this.#container, msIn)
         }
 
         this.#pages.forEach((page) => page.classList.toggle("hidden", page !== targetPage))
@@ -96,6 +110,10 @@ export class Pages {
                 this.after()
             })
         })
+
+        if (msOut > 0) {
+            await Awaits.fadeIn(this.#container, msOut)
+        }
     }
 
     #disableButtons() {
@@ -107,20 +125,6 @@ export class Pages {
     #ableButtons() {
         this.#container.querySelectorAll("button").forEach((b) => {
             b.disabled = false
-        })
-    }
-
-    #fadeOut(): Promise<void> {
-        return new Promise((resolve) => {
-            this.#container.style.transition = "opacity 200ms"
-            this.#container.style.opacity = "0"
-            this.#container.style.pointerEvents = "none"
-
-            setTimeout(() => {
-                this.#container.style.opacity = "1"
-                this.#container.style.pointerEvents = ""
-                resolve()
-            }, 200)
         })
     }
 }

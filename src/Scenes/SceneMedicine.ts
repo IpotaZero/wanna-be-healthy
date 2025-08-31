@@ -1,3 +1,4 @@
+import { SE } from "../SE"
 import { State } from "../State"
 import { Awaits } from "../utils/Awaits"
 import { ETyping } from "../utils/ETyping"
@@ -65,6 +66,8 @@ export class SceneMedicine extends Scene {
             State.dark = true
             State.day++
 
+            SE.pakipaki.play()
+
             const container = document.querySelector<HTMLElement>("#container")!
 
             const vale = document.createElement("div")
@@ -76,8 +79,14 @@ export class SceneMedicine extends Scene {
             container.style.transform = "rotate(2deg)"
             document.querySelector<HTMLElement>("#cover")!.style.transform = "rotate(2deg)"
 
-            const { SceneDay } = await import("./SceneDay")
-            await Scenes.goto(() => new SceneDay())
+            if (State.day === 4) {
+                const { SceneNovel } = await import("./SceneNovel")
+                await Scenes.goto(() => new SceneNovel(false))
+            } else {
+                const { SceneDay } = await import("./SceneDay")
+                await Scenes.goto(() => new SceneDay())
+            }
+
             vale.classList.add("fade-out")
 
             await Awaits.sleep(2000)
@@ -102,6 +111,8 @@ export class SceneMedicine extends Scene {
     }
 
     async #handleNotUse(difficulty: number) {
+        if (this.#selected) return
+
         this.#selected = true
 
         this.#keyDriver.isAvailable = false

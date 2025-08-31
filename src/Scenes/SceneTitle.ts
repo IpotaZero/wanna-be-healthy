@@ -1,3 +1,4 @@
+import { State } from "../State.js"
 import { BGM } from "../utils/BGM.js"
 import { KeyDriver } from "../utils/KeyDriver.js"
 import { MusicVisualizer } from "../utils/MusicVisualizer.js"
@@ -31,7 +32,9 @@ export class SceneTitle extends Scene {
 
         await this.#pages.ready
 
-        await BGM.fetch("assets/sounds/title.mp3", { loopStart: 42, volume: 2 })
+        const detune = State.dark ? -100 : 0
+
+        await BGM.fetch("assets/sounds/title.mp3", { loopStart: 42, volume: 2, detune })
         BGM.play()
 
         const cvs = container.querySelector("canvas")!
@@ -53,6 +56,8 @@ export class SceneTitle extends Scene {
 
     #setupButtons() {
         document.querySelector<HTMLElement>("#game")!.onclick = async () => {
+            State.reset()
+
             // const { SceneDay: Scene } = await import("./SceneDay.js")
             // const { SceneNight: Scene } = await import("./SceneNight.js")
             const { SceneNovel: Scene } = await import("./SceneNovel.js")
@@ -60,7 +65,7 @@ export class SceneTitle extends Scene {
 
             BGM.fadeOut(1000)
 
-            Scenes.goto(() => new Scene(), { msIn: 1000, msOut: 1000 })
+            Scenes.goto(() => new Scene(true), { msIn: 1000, msOut: 1000 })
         }
     }
 
