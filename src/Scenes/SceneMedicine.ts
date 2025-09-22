@@ -17,16 +17,12 @@ export class SceneMedicine extends Scene {
 
     #selected = false
 
-    #keyDriver!: KeyDriver
-
     constructor(difficulty: number) {
         super()
         this.ready = this.#setup(difficulty)
     }
 
-    async end(): Promise<void> {
-        this.#keyDriver.discard()
-    }
+    async end(): Promise<void> {}
 
     async #setup(difficulty: number) {
         const container = document.querySelector<HTMLElement>("#container")!
@@ -36,7 +32,6 @@ export class SceneMedicine extends Scene {
         await this.#page.ready
 
         await Awaits.sleep(100)
-        this.#keyDriver = new KeyDriver("horizontal")
 
         this.#cacheElements(container)
         this.#attachEventHandlers(difficulty)
@@ -60,8 +55,6 @@ export class SceneMedicine extends Scene {
             this.#selected = true
 
             this.#count++
-
-            this.#keyDriver.isAvailable = false
 
             State.dark = true
             State.day++
@@ -104,7 +97,6 @@ export class SceneMedicine extends Scene {
 
             State.usedMedicine = true
             State.day++
-            this.#keyDriver.isAvailable = false
             const { SceneDay } = await import("./SceneDay")
             Scenes.goto(() => new SceneDay())
         }
@@ -115,7 +107,6 @@ export class SceneMedicine extends Scene {
 
         this.#selected = true
 
-        this.#keyDriver.isAvailable = false
         const { SceneNight } = await import("./SceneNight")
         Scenes.goto(() => new SceneNight(difficulty))
     }

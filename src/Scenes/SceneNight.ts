@@ -344,7 +344,7 @@ class SceneFail extends Scene {
     }
 
     async #setPage() {
-        const container = document.querySelector("#container main")!
+        const container = document.querySelector("#container #game")!
 
         container.innerHTML += `
             <i-typing se="assets/sounds/select.wav">てつやして しまった...</i-typing>
@@ -353,6 +353,7 @@ class SceneFail extends Scene {
                 i-typing {
                     position: absolute;
                     color: whitesmoke;
+                    z-index:10000;
                 }
             </style>
         `
